@@ -6,7 +6,7 @@ import (
 	"log"
 	"metrics-collector/cmd/agent/metrics"
 	"metrics-collector/internal/sender"
-	"metrics-collector/internal/signal_controller"
+	sc "metrics-collector/internal/signalController"
 	"net/http"
 	"time"
 )
@@ -37,7 +37,7 @@ func (a *App) Run(ctx context.Context, cancel context.CancelFunc) {
 
 	monitor := metrics.New(a.reportTimerDuration)
 	go monitor.Run(ctx2, cancel2)
-	go signal_controller.Run(ctx2, cancel2)
+	go sc.Run(ctx2, cancel2)
 	go a.Report(ctx2, cancel2, monitor)
 
 	<-ctx2.Done()
@@ -61,7 +61,7 @@ func (a *App) Report(ctx context.Context, cancel context.CancelFunc, monitor *me
 				return
 			}
 
-			// TODO: можно ассинхронно отправлять запросы; 
+			// TODO: можно ассинхронно отправлять запросы;
 			// не очень понятно, нужно ли что-то дополнительно делать с ctx2
 
 			ctx2, cancel2 := context.WithCancel(ctx)

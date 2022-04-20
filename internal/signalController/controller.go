@@ -1,4 +1,4 @@
-package signal_controller
+package signalController
 
 import (
 	"context"
