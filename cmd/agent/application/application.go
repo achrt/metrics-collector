@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"metrics-collector/cmd/agent/metrics"
-	"metrics-collector/internal/sender"
-	sc "metrics-collector/internal/controller"
 	"net/http"
 	"time"
+
+	"github.com/achrt/metrics-collector/cmd/agent/metrics"
+	sc "github.com/achrt/metrics-collector/internal/controller"
+	"github.com/achrt/metrics-collector/internal/sender"
 )
 
 type App struct {
