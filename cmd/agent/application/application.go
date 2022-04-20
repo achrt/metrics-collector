@@ -6,7 +6,7 @@ import (
 	"log"
 	"metrics-collector/cmd/agent/metrics"
 	"metrics-collector/internal/sender"
-	sc "metrics-collector/internal/signalController"
+	sc "metrics-collector/internal/controller"
 	"net/http"
 	"time"
 )
