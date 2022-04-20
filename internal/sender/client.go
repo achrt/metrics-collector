@@ -27,10 +27,22 @@ func (c *Client) R() *Request {
 	}
 }
 
-func (c *Client) execute(req *Request) (*http.Response, error) {
+func (c *Client) execute(req *Request) (*Response, error) {
 	if req.RawRequest == nil {
 		return nil, errors.New("req.RawRequest is nil")
 	}
 	resp, err := c.httpClient.Do(req.RawRequest)
-	return resp, err
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	r := &Response{
+		Status:     resp.Status,
+		StatusCode: resp.StatusCode,
+		Proto:      resp.Proto,
+		Body:       resp.Body,
+	}
+
+	return r, err
 }
