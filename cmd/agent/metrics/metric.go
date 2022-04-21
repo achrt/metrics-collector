@@ -2,13 +2,14 @@ package metrics
 
 import (
 	"context"
-	"fmt"
 	"runtime"
 	"time"
+
+	"github.com/achrt/metrics-collector/internal/domain/models/health"
 )
 
 type Monitor struct {
-	runtime.MemStats
+	health.HealthStat
 
 	pollCount   int
 	randomValue uint64
@@ -21,7 +22,6 @@ func New(duration int64) *Monitor {
 }
 
 func (m *Monitor) Run(ctx context.Context, cancel context.CancelFunc) {
-	defer fmt.Println("Canceled Monitor")
 	defer cancel()
 
 	interval := time.Duration(m.duration) * time.Second
@@ -41,5 +41,7 @@ func (m *Monitor) RandomValue() uint64 {
 }
 
 func (m *Monitor) updateMetrics() {
-	runtime.ReadMemStats(&m.MemStats)
+	ms := runtime.MemStats{}
+	runtime.ReadMemStats(&ms)
+	m.SetMetrics(ms)
 }
