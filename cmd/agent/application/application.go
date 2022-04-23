@@ -79,7 +79,7 @@ func (a *App) Report(ctx context.Context, cancel context.CancelFunc, monitor *me
 				log.Println(err)
 			}
 
-			if status != http.StatusAccepted {
+			if status != http.StatusOK {
 				log.Println("request response status: ", status)
 			}
 		}
