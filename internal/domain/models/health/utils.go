@@ -52,67 +52,81 @@ func (h HealthStat) MetricData(code string) (metricType, name, value string, err
 	}
 
 	switch code {
-	case Alloc:
-		value = strconv.Itoa(int(h.Alloc))
-	case BuckHashSys:
-		value = strconv.Itoa(int(h.BuckHashSys))
-	case Frees:
-		value = strconv.Itoa(int(h.Frees))
-	case GCCPUFraction:
-		value = strconv.Itoa(int(h.GCCPUFraction))
-	case GCSys:
-		value = strconv.Itoa(int(h.GCSys))
-	case HeapAlloc:
-		value = strconv.Itoa(int(h.HeapAlloc))
-	case HeapIdle:
-		value = strconv.Itoa(int(h.HeapIdle))
-	case HeapInuse:
-		value = strconv.Itoa(int(h.HeapInuse))
-	case HeapObjects:
-		value = strconv.Itoa(int(h.HeapObjects))
-	case HeapReleased:
-		value = strconv.Itoa(int(h.HeapReleased))
-	case HeapSys:
-		value = strconv.Itoa(int(h.HeapSys))
-	case LastGC:
-		value = strconv.Itoa(int(h.LastGC))
-	case Lookups:
-		value = strconv.Itoa(int(h.Lookups))
-	case MCacheInuse:
-		value = strconv.Itoa(int(h.MCacheInuse))
-	case MCacheSys:
-		value = strconv.Itoa(int(h.MCacheSys))
-	case MSpanInuse:
-		value = strconv.Itoa(int(h.MSpanInuse))
-	case MSpanSys:
-		value = strconv.Itoa(int(h.MSpanSys))
-	case Mallocs:
-		value = strconv.Itoa(int(h.Mallocs))
-	case NextGC:
-		value = strconv.Itoa(int(h.NextGC))
-	case NumForcedGC:
-		value = strconv.Itoa(int(h.NumForcedGC))
-	case NumGC:
-		value = strconv.Itoa(int(h.NumGC))
-	case OtherSys:
-		value = strconv.Itoa(int(h.OtherSys))
-	case PauseTotalNs:
-		value = strconv.Itoa(int(h.PauseTotalNs))
-	case StackInuse:
-		value = strconv.Itoa(int(h.StackInuse))
-	case StackSys:
-		value = strconv.Itoa(int(h.StackSys))
-	case Sys:
-		value = strconv.Itoa(int(h.Sys))
-	case TotalAlloc:
-		value = strconv.Itoa(int(h.TotalAlloc))
 	case PollCount:
 		value = strconv.FormatInt(h.PollCount, 10)
 	case RandomValue:
 		value = strconv.Itoa(int(h.RandomValue))
+	default:
+		v, _ := h.Metric(code)
+		value = strconv.Itoa(int(v))
 	}
 
 	name = code
+	return
+}
+
+func (h HealthStat) Metric(code string) (value float64, err error) {
+	if _, ok := metricTypes[code]; !ok {
+		err = errors.New("uncnown metric name")
+		return
+	}
+
+	switch code {
+	case Alloc:
+		value = h.Alloc
+	case BuckHashSys:
+		value = h.BuckHashSys
+	case Frees:
+		value = h.Frees
+	case GCCPUFraction:
+		value = h.GCCPUFraction
+	case GCSys:
+		value = h.GCSys
+	case HeapAlloc:
+		value = h.HeapAlloc
+	case HeapIdle:
+		value = h.HeapIdle
+	case HeapInuse:
+		value = h.HeapInuse
+	case HeapObjects:
+		value = h.HeapObjects
+	case HeapReleased:
+		value = h.HeapReleased
+	case HeapSys:
+		value = h.HeapSys
+	case LastGC:
+		value = h.LastGC
+	case Lookups:
+		value = h.Lookups
+	case MCacheInuse:
+		value = h.MCacheInuse
+	case MCacheSys:
+		value = h.MCacheSys
+	case MSpanInuse:
+		value = h.MSpanInuse
+	case MSpanSys:
+		value = h.MSpanSys
+	case Mallocs:
+		value = h.Mallocs
+	case NextGC:
+		value = h.NextGC
+	case NumForcedGC:
+		value = h.NumForcedGC
+	case NumGC:
+		value = h.NumGC
+	case OtherSys:
+		value = h.OtherSys
+	case PauseTotalNs:
+		value = h.PauseTotalNs
+	case StackInuse:
+		value = h.StackInuse
+	case StackSys:
+		value = h.StackSys
+	case Sys:
+		value = h.Sys
+	case TotalAlloc:
+		value = h.TotalAlloc
+	}
 	return
 }
 
@@ -148,33 +162,33 @@ var metricCodes = []string{
 }
 
 var metricTypes = map[string]string{
-	Alloc:         "gauge",
-	BuckHashSys:   "gauge",
-	Frees:         "gauge",
-	GCCPUFraction: "gauge",
-	GCSys:         "gauge",
-	HeapAlloc:     "gauge",
-	HeapIdle:      "gauge",
-	HeapInuse:     "gauge",
-	HeapObjects:   "gauge",
-	HeapReleased:  "gauge",
-	HeapSys:       "gauge",
-	LastGC:        "gauge",
-	Lookups:       "gauge",
-	MCacheInuse:   "gauge",
-	MCacheSys:     "gauge",
-	MSpanInuse:    "gauge",
-	MSpanSys:      "gauge",
-	Mallocs:       "gauge",
-	NextGC:        "gauge",
-	NumForcedGC:   "gauge",
-	NumGC:         "gauge",
-	OtherSys:      "gauge",
-	PauseTotalNs:  "gauge",
-	StackInuse:    "gauge",
-	StackSys:      "gauge",
-	Sys:           "gauge",
-	TotalAlloc:    "gauge",
-	PollCount:     "counter",
-	RandomValue:   "gauge",
+	Alloc:         TypeGauge,
+	BuckHashSys:   TypeGauge,
+	Frees:         TypeGauge,
+	GCCPUFraction: TypeGauge,
+	GCSys:         TypeGauge,
+	HeapAlloc:     TypeGauge,
+	HeapIdle:      TypeGauge,
+	HeapInuse:     TypeGauge,
+	HeapObjects:   TypeGauge,
+	HeapReleased:  TypeGauge,
+	HeapSys:       TypeGauge,
+	LastGC:        TypeGauge,
+	Lookups:       TypeGauge,
+	MCacheInuse:   TypeGauge,
+	MCacheSys:     TypeGauge,
+	MSpanInuse:    TypeGauge,
+	MSpanSys:      TypeGauge,
+	Mallocs:       TypeGauge,
+	NextGC:        TypeGauge,
+	NumForcedGC:   TypeGauge,
+	NumGC:         TypeGauge,
+	OtherSys:      TypeGauge,
+	PauseTotalNs:  TypeGauge,
+	StackInuse:    TypeGauge,
+	StackSys:      TypeGauge,
+	Sys:           TypeGauge,
+	TotalAlloc:    TypeGauge,
+	PollCount:     TypeCounter,
+	RandomValue:   TypeGauge,
 }
