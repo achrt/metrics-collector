@@ -1,22 +1,23 @@
 package application
 
 import (
-	"net/http"
-
 	"github.com/achrt/metrics-collector/internal/domain/repositories"
 	"github.com/achrt/metrics-collector/internal/storage"
+	"github.com/gin-gonic/gin"
 )
 
 type App struct {
-	Store repositories.Storage
+	Store  repositories.Storage
+	Router *gin.Engine
 }
 
 func New() *App {
 	return &App{
-		Store: storage.New(),
+		Store:  storage.New(),
+		Router: gin.Default(),
 	}
 }
 
 func (a *App) Run(address string) error {
-	return http.ListenAndServe(address, nil)
+	return a.Router.Run(address)
 }
