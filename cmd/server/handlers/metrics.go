@@ -31,21 +31,26 @@ func (h *Handler) update(r *http.Request) (status int, err error) {
 
 	if len(params) < 5 {
 		err = errors.New("wrong request")
-		status = http.StatusBadRequest
+		status = http.StatusNotFound
 		return
 	}
 
 	if params[2] != health.TypeGauge && params[2] != health.TypeCounter {
 		err = errors.New("wrong metric type")
-		status = http.StatusBadRequest
+		status = http.StatusNotImplemented
 		return
 	}
 
-	if params[2] == health.TypeCounter {
+	// TODO: не понятно, нужно ли сохранять неопознанную метрику
+	if !health.IsExists(params[3]) {
+		return
+	}
+
+	if params[2] == health.TypeCounter && params[3] == health.PollCount {
 		var value int64
 		value, err = strconv.ParseInt(params[4], 10, 64)
 		if err != nil {
-			status = http.StatusInternalServerError
+			status = http.StatusBadRequest
 			return
 		}
 		h.store.UpdateCounter(value)
@@ -55,7 +60,7 @@ func (h *Handler) update(r *http.Request) (status int, err error) {
 	var value float64
 	value, err = strconv.ParseFloat(params[4], 64)
 	if err != nil {
-		status = http.StatusInternalServerError
+		status = http.StatusBadRequest
 		return
 	}
 

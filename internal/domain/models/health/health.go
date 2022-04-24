@@ -32,8 +32,3 @@ type HealthStat struct {
 	PollCount   int64
 	RandomValue float64
 }
-
-// MetricCodes возвращает доступные метрики
-func (HealthStat) MetricCodes() []string {
-	return metricCodes
-}

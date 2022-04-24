@@ -4,7 +4,18 @@ import (
 	"errors"
 	"runtime"
 	"strconv"
+	"strings"
 )
+
+func IsExists(code string) bool {
+	code = strings.ToLower(code)
+	for _, c := range metricCodes {
+		if c == code {
+			return true
+		}
+	}
+	return false
+}
 
 func (h *HealthStat) SetMetrics(r runtime.MemStats) {
 	h.Alloc = float64(r.Alloc)
@@ -36,6 +47,11 @@ func (h *HealthStat) SetMetrics(r runtime.MemStats) {
 	h.TotalAlloc = float64(r.TotalAlloc)
 }
 
+// MetricCodes возвращает доступные метрики
+func (HealthStat) MetricCodes() []string {
+	return metricCodes
+}
+
 func (HealthStat) GetType(code string) (val string, err error) {
 	var ok bool
 	if val, ok = metricTypes[code]; !ok {
@@ -45,7 +61,7 @@ func (HealthStat) GetType(code string) (val string, err error) {
 }
 
 // MetricData возвращает текстовое представление метрики
-func (h HealthStat) MetricData(code string) (metricType, name, value string, err error) {
+func (h HealthStat) MetricData(code string) (metricType, value string, err error) {
 	metricType, err = h.GetType(code)
 	if err != nil {
 		return
@@ -61,7 +77,6 @@ func (h HealthStat) MetricData(code string) (metricType, name, value string, err
 		value = strconv.Itoa(int(v))
 	}
 
-	name = code
 	return
 }
 
@@ -159,6 +174,7 @@ var metricCodes = []string{
 	Sys,
 	TotalAlloc,
 	PollCount,
+	RandomValue,
 }
 
 var metricTypes = map[string]string{
