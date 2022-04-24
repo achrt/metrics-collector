@@ -9,7 +9,7 @@ import (
 
 func TestMetricData(t *testing.T) {
 	var testData float64 = 8000000
-	var testDataVal string = "8000000"
+	var testDataVal = "8000000"
 	hs := &HealthStat{
 		Alloc: testData,
 	}

@@ -41,11 +41,6 @@ func (h *Handler) update(r *http.Request) (status int, err error) {
 		return
 	}
 
-	// TODO: не понятно, нужно ли сохранять неопознанную метрику
-	if !health.IsExists(params[3]) {
-		return
-	}
-
 	if params[2] == health.TypeCounter && params[3] == health.PollCount {
 		var value int64
 		value, err = strconv.ParseInt(params[4], 10, 64)
@@ -61,6 +56,11 @@ func (h *Handler) update(r *http.Request) (status int, err error) {
 	value, err = strconv.ParseFloat(params[4], 64)
 	if err != nil {
 		status = http.StatusBadRequest
+		return
+	}
+
+	// TODO: не понятно, нужно ли сохранять неопознанную метрику
+	if !health.IsExists(params[3]) {
 		return
 	}
 
