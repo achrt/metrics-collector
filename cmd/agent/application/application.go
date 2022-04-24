@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"metrics-collector/cmd/agent/metrics"
-	"metrics-collector/internal/sender"
-	sc "metrics-collector/internal/controller"
 	"net/http"
 	"time"
+
+	"github.com/achrt/metrics-collector/cmd/agent/metrics"
+	sc "github.com/achrt/metrics-collector/internal/controller"
+	"github.com/achrt/metrics-collector/internal/sender"
 )
 
 type App struct {
@@ -38,15 +39,15 @@ func (a *App) Run(ctx context.Context, cancel context.CancelFunc) {
 	monitor := metrics.New(a.reportTimerDuration)
 	go monitor.Run(ctx2, cancel2)
 	go sc.Run(ctx2, cancel2)
-	go a.Report(ctx2, cancel2, monitor)
+	go a.report(ctx2, cancel2, monitor)
 
 	<-ctx2.Done()
 }
 
-func (a *App) Report(ctx context.Context, cancel context.CancelFunc, monitor *metrics.Monitor) {
+func (a *App) report(ctx context.Context, cancel context.CancelFunc, monitor *metrics.Monitor) {
 	defer cancel()
 
-	var mType, name, value string
+	var mType, value string
 	var err error
 	var status int
 
@@ -55,7 +56,7 @@ func (a *App) Report(ctx context.Context, cancel context.CancelFunc, monitor *me
 		<-time.After(time.Duration(a.reportInterval) * time.Second)
 
 		for _, metric := range metrics {
-			mType, name, value, err = monitor.MetricData(metric)
+			mType, value, err = monitor.MetricData(metric)
 			if err != nil {
 				log.Println(err)
 				return
@@ -66,7 +67,7 @@ func (a *App) Report(ctx context.Context, cancel context.CancelFunc, monitor *me
 
 			ctx2, cancel2 := context.WithCancel(ctx)
 
-			url := fmt.Sprintf("%s/update/%s/%s/%s", a.metricServerAddress, mType, name, value)
+			url := fmt.Sprintf("%s/update/%s/%s/%s", a.metricServerAddress, mType, metric, value)
 
 			status, err = sender.New().R().
 				SetURL(url).
@@ -78,7 +79,7 @@ func (a *App) Report(ctx context.Context, cancel context.CancelFunc, monitor *me
 				log.Println(err)
 			}
 
-			if status != http.StatusAccepted {
+			if status != http.StatusOK {
 				log.Println("request response status: ", status)
 			}
 		}

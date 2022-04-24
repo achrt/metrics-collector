@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"metrics-collector/cmd/agent/application"
+
+	"github.com/achrt/metrics-collector/cmd/agent/application"
 )
 
 const duration = int64(2)
