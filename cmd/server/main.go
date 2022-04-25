@@ -17,6 +17,7 @@ func main() {
 
 	app := application.New()
 	handler := handlers.New(app)
+	app.Router.LoadHTMLFiles("./handlers/templates/index.tmpl")
 	handler.Router()
 
 	log.Fatal(app.Run(net.JoinHostPort(host, port)))
