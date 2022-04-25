@@ -20,7 +20,7 @@ func New(app *application.App) *Handler {
 
 func (h *Handler) Router() {
 	// TODO: проблемы с загрузкой шаблона в автотестах, не находится путь до директории
-	// h.router.LoadHTMLGlob("./handlers/templates/*")
+	h.router.LoadHTMLGlob("./handlers/templates/*")
 
 	h.router.RedirectFixedPath = false
 	h.router.RedirectTrailingSlash = false
