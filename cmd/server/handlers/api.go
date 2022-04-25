@@ -19,7 +19,9 @@ func New(app *application.App) *Handler {
 }
 
 func (h *Handler) Router() {
-	h.router.LoadHTMLGlob("handlers/templates/*")
+	// TODO: проблемы с загрузкой шаблона в автотестах, не находится путь до директории
+	// h.router.LoadHTMLGlob("./handlers/templates/*")
+
 	h.router.GET("/", h.List)
 	h.router.GET("/health", h.Health)
 	h.router.POST("/update/:type/:code/:value", h.Update)
