@@ -77,7 +77,7 @@ func (str *Storage) UpdateCounter(code string, val int64) {
 
 func (str *Storage) updateCounter(code string, val int64) {
 	code = strings.ToLower(code)
-	str.c[code] = val
+	str.c[code] += val
 }
 
 func (str *Storage) updateMetric(code string, val float64) error {
