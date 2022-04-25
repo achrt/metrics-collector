@@ -26,7 +26,7 @@ func (h *Handler) update(c *gin.Context) (status int, err error) {
 	rawValue := c.Param("value")
 
 	if mType != health.TypeCounter && mType != health.TypeGauge {
-		status = http.StatusNotFound
+		status = http.StatusNotImplemented
 		err = errors.New(http.StatusText(status))
 		return
 	}

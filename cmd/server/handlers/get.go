@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/achrt/metrics-collector/internal/domain/models/health"
 	"github.com/gin-gonic/gin"
@@ -39,7 +39,7 @@ func (h *Handler) get(c *gin.Context) (value string, status int, err error) {
 			err = errors.New(http.StatusText(status))
 			return
 		}
-		value = strconv.Itoa(int(val))
+		value = fmt.Sprintf("%v", val)
 		return
 	}
 
@@ -50,6 +50,6 @@ func (h *Handler) get(c *gin.Context) (value string, status int, err error) {
 		err = errors.New(http.StatusText(status))
 		return
 	}
-	value = strconv.Itoa(int(val))
+	value = fmt.Sprintf("%v", val)
 	return
 }

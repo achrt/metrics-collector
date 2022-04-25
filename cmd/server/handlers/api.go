@@ -22,6 +22,9 @@ func (h *Handler) Router() {
 	// TODO: проблемы с загрузкой шаблона в автотестах, не находится путь до директории
 	// h.router.LoadHTMLGlob("./handlers/templates/*")
 
+	h.router.RedirectFixedPath = false
+	h.router.RedirectTrailingSlash = false
+
 	h.router.GET("/", h.List)
 	h.router.GET("/health", h.Health)
 	h.router.POST("/update/:type/:code/:value", h.Update)

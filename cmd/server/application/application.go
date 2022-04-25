@@ -12,9 +12,11 @@ type App struct {
 }
 
 func New() *App {
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
 	return &App{
 		Store:  storage.New(),
-		Router: gin.Default(),
+		Router: router,
 	}
 }
 
