@@ -4,11 +4,16 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 )
 
 type Storage struct {
-	c map[string]int64
-	u map[string]float64
+	cMutex sync.RWMutex
+	c      map[string]int64
+
+	uMutex sync.RWMutex
+	u      map[string]float64
+
 	i map[string]interface{}
 }
 
@@ -33,6 +38,9 @@ func (str *Storage) Set(code string, val interface{}) {
 }
 
 func (str *Storage) GetMetric(code string) (float64, error) {
+	str.uMutex.RLock()
+	defer str.uMutex.RUnlock()
+
 	code = strings.ToLower(code)
 	if val, ok := str.u[code]; ok {
 		return val, nil
@@ -49,6 +57,10 @@ func (str *Storage) GetCounters() map[string]int64 {
 }
 
 func (str *Storage) GetCounter(code string) (int64, error) {
+	str.cMutex.RLock()
+	defer str.cMutex.RUnlock()
+
+	code = strings.ToLower(code)
 	if val, ok := str.c[code]; ok {
 		return val, nil
 	}
