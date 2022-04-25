@@ -49,7 +49,6 @@ func (str *Storage) GetCounters() map[string]int64 {
 }
 
 func (str *Storage) GetCounter(code string) (int64, error) {
-	code = strings.ToLower(code)
 	if val, ok := str.c[code]; ok {
 		return val, nil
 	}
