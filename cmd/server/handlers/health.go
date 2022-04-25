@@ -1,23 +1,15 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-func (h *Handler) Health(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
+func (h *Handler) Health(c *gin.Context) {
 	health := struct {
 		Health string `json:"health"`
 	}{Health: "ok"}
 
-	resp, err := json.Marshal(health)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write(resp)
+	c.JSON(http.StatusOK, health)
 }

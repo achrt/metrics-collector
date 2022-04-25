@@ -4,7 +4,15 @@ import (
 	"testing"
 
 	"github.com/achrt/metrics-collector/internal/domain/models/health"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+)
+
+var (
+	counterCode       = "counter-code"
+	counterVal  int64 = 345
+
+	wrongCode = "wrong-code"
 )
 
 func TestMain(m *testing.M) {
@@ -16,11 +24,23 @@ func TestUpdate(t *testing.T) {
 	for code, val := range storeFiller {
 		err := store.UpdateMetric(code, val)
 		require.NoError(t, err)
+
+		value, err := store.GetMetric(code)
+		require.NoError(t, err)
+		assert.Equal(t, val, value)
 	}
 
-	wrongCode := "wrong-code"
-	var val float64 = 456464
-	err := store.UpdateMetric(wrongCode, val)
+	_, err := store.GetMetric(wrongCode)
+	require.Error(t, err)
+}
+
+func TestGetCounter(t *testing.T) {
+	store.UpdateCounter(counterCode, counterVal)
+	val, err := store.GetCounter(counterCode)
+	require.NoError(t, err)
+	assert.Equal(t, counterVal, val)
+
+	_, err = store.GetCounter(wrongCode)
 	require.Error(t, err)
 }
 
