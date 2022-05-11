@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
@@ -10,8 +11,7 @@ import (
 func (h *Handler) UpdateMetrics(c *gin.Context) {
 	status, err := h.updateMetrics(c)
 	if err != nil {
-		c.String(status, err.Error())
-		return
+		log.Println(err)
 	}
 	c.JSON(status, struct{}{})
 }
