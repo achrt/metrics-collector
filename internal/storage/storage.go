@@ -2,9 +2,10 @@ package storage
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"sync"
+
+	"github.com/achrt/metrics-collector/internal/domain/models"
 )
 
 type Storage struct {
@@ -14,29 +15,39 @@ type Storage struct {
 	uMutex sync.RWMutex
 	u      map[string]float64
 
-	i map[string]interface{}
+	mMutex sync.RWMutex
+	m      map[string]models.Metrics
 }
 
 func New() *Storage {
 	return &Storage{
 		c: map[string]int64{},
 		u: map[string]float64{},
+		m: map[string]models.Metrics{},
 	}
 }
 
-func (str *Storage) Get(code string) (string, error) {
+func (str *Storage) Get(code string) (*models.Metrics, error) {
+	str.mMutex.RLock()
+	defer str.mMutex.RUnlock()
+
 	code = strings.ToLower(code)
-	if val, ok := str.i[code]; ok {
-		return fmt.Sprintf("%v", val), nil
+	if val, ok := str.m[code]; ok {
+		return &val, nil
 	}
-	return "", errors.New("unknown metric code")
+	return nil, errors.New("unknown metric code")
 }
 
-func (str *Storage) Set(code string, val interface{}) {
+func (str *Storage) Set(code string, val models.Metrics) {
+	str.mMutex.RLock()
+	defer str.mMutex.RUnlock()
+
 	code = strings.ToLower(code)
-	str.i[code] = val
+	str.m[code] = val
 }
 
+
+// TODO: rename methodes
 func (str *Storage) GetMetric(code string) (float64, error) {
 	str.uMutex.RLock()
 	defer str.uMutex.RUnlock()
@@ -76,11 +87,17 @@ func (str *Storage) UpdateCounter(code string, val int64) {
 }
 
 func (str *Storage) updateCounter(code string, val int64) {
+	str.cMutex.RLock()
+	defer str.cMutex.RUnlock()
+
 	code = strings.ToLower(code)
 	str.c[code] += val
 }
 
 func (str *Storage) updateMetric(code string, val float64) error {
+	str.uMutex.RLock()
+	defer str.uMutex.RUnlock()
+
 	code = strings.ToLower(code)
 	str.u[code] = val
 	return nil
