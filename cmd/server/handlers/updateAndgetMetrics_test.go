@@ -83,7 +83,7 @@ func Test_Handlers_UpdateGet_Metrics(t *testing.T) {
 			uri:        "/value/",
 			body:       models.Metrics{ID: "Wrong", MType: wrongType},
 			wantValue:  `err`,
-			wantStatus: 400,
+			wantStatus: 404,
 		},
 	}
 

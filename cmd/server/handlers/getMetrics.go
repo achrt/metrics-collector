@@ -29,14 +29,14 @@ func (h *Handler) getMetrics(c *gin.Context) (m *models.Metrics, status int, err
 	}
 
 	if m.ID == "" || m.MType == "" {
-		status = http.StatusBadRequest
+		status = http.StatusNotFound
 		err = errors.New("m.ID | m.MType is an empty string")
 		return
 	}
 
 	m, err = h.store.Get(m.ID)
 	if err != nil {
-		status = http.StatusBadRequest
+		status = http.StatusNotFound
 	}
 	return
 }

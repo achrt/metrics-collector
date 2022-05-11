@@ -13,7 +13,7 @@ func (h *Handler) UpdateMetrics(c *gin.Context) {
 		c.String(status, err.Error())
 		return
 	}
-	c.JSON(status, nil)
+	c.JSON(status, struct{}{})
 }
 
 func (h *Handler) updateMetrics(c *gin.Context) (status int, err error) {
