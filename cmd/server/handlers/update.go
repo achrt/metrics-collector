@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/achrt/metrics-collector/internal/domain/models/health"
+	"github.com/achrt/metrics-collector/internal/domain/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,13 +25,13 @@ func (h *Handler) update(c *gin.Context) (status int, err error) {
 	code := c.Param("code")
 	rawValue := c.Param("value")
 
-	if mType != health.TypeCounter && mType != health.TypeGauge {
+	if mType != models.TypeCounter && mType != models.TypeGauge {
 		status = http.StatusNotImplemented
 		err = errors.New(http.StatusText(status))
 		return
 	}
 
-	if mType == health.TypeCounter {
+	if mType == models.TypeCounter {
 		var value int64
 		value, err = strconv.ParseInt(rawValue, 10, 64)
 		if err != nil {

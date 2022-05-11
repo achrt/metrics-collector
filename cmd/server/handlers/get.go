@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/achrt/metrics-collector/internal/domain/models/health"
+	"github.com/achrt/metrics-collector/internal/domain/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,13 +25,13 @@ func (h *Handler) get(c *gin.Context) (value string, status int, err error) {
 
 	status = http.StatusOK
 
-	if mType != health.TypeCounter && mType != health.TypeGauge {
+	if mType != models.TypeCounter && mType != models.TypeGauge {
 		status = http.StatusNotFound
 		err = errors.New(http.StatusText(status))
 		return
 	}
 
-	if mType == health.TypeCounter {
+	if mType == models.TypeCounter {
 		var val int64
 		val, err = h.store.GetCounter(code)
 		if err != nil {

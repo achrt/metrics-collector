@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
@@ -12,7 +13,8 @@ func (h *Handler) GetMetrics(c *gin.Context) {
 
 	metric, status, err := h.getMetrics(c)
 	if err != nil {
-		c.String(status, err.Error())
+		log.Println(err)
+		c.String(status, "err")
 		return
 	}
 	c.JSON(status, metric)

@@ -42,11 +42,29 @@ func (str *Storage) Set(code string, val models.Metrics) error {
 	if code == "" {
 		return errors.New("code is an empty string")
 	}
+
 	str.mMutex.RLock()
 	defer str.mMutex.RUnlock()
 
 	code = strings.ToLower(code)
-	str.m[code] = val
+
+	if val.MType == models.TypeCounter {
+		if val.Delta == nil {
+			return errors.New("val.Delta can not be nil")
+		}
+		if str.m[code].Delta == nil {
+			str.m[code] = val
+			return nil
+		}
+		*str.m[code].Delta += *val.Delta
+	}
+
+	if val.MType == models.TypeGauge {
+		if val.Value == nil {
+			return errors.New("val.Value can not be nil")
+		}
+		str.m[code] = val
+	}
 	return nil
 }
 
