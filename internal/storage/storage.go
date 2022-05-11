@@ -38,14 +38,17 @@ func (str *Storage) Get(code string) (*models.Metrics, error) {
 	return nil, errors.New("unknown metric code")
 }
 
-func (str *Storage) Set(code string, val models.Metrics) {
+func (str *Storage) Set(code string, val models.Metrics) error {
+	if code == "" {
+		return errors.New("code is an empty string")
+	}
 	str.mMutex.RLock()
 	defer str.mMutex.RUnlock()
 
 	code = strings.ToLower(code)
 	str.m[code] = val
+	return nil
 }
-
 
 // TODO: rename methodes
 func (str *Storage) GetMetric(code string) (float64, error) {
@@ -82,19 +85,28 @@ func (str *Storage) UpdateMetric(code string, val float64) error {
 	return str.updateMetric(code, val)
 }
 
-func (str *Storage) UpdateCounter(code string, val int64) {
-	str.updateCounter(code, val)
+func (str *Storage) UpdateCounter(code string, val int64) error {
+	return str.updateCounter(code, val)
 }
 
-func (str *Storage) updateCounter(code string, val int64) {
+func (str *Storage) updateCounter(code string, val int64) error {
+	if code == "" {
+		return errors.New("code is an empty string")
+	}
+
 	str.cMutex.RLock()
 	defer str.cMutex.RUnlock()
 
 	code = strings.ToLower(code)
 	str.c[code] += val
+	return nil
 }
 
 func (str *Storage) updateMetric(code string, val float64) error {
+	if code == "" {
+		return errors.New("code is an empty string")
+	}
+
 	str.uMutex.RLock()
 	defer str.uMutex.RUnlock()
 

@@ -38,7 +38,7 @@ func (h *Handler) update(c *gin.Context) (status int, err error) {
 			status = http.StatusBadRequest
 			return
 		}
-		h.store.UpdateCounter(code, value)
+		err = h.store.UpdateCounter(code, value)
 		return
 	}
 

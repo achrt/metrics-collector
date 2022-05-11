@@ -25,7 +25,9 @@ func (h *Handler) updateMetrics(c *gin.Context) (status int, err error) {
 		return
 	}
 
-	h.store.Set(m.ID, m)
+	if err = h.store.Set(m.ID, m); err != nil {
+		status = http.StatusBadRequest
+	}
 
-	return status, nil
+	return
 }

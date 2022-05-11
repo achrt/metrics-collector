@@ -38,7 +38,9 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestGetCounter(t *testing.T) {
-	store.UpdateCounter(counterCode, counterVal)
+	err := store.UpdateCounter(counterCode, counterVal)
+	require.NoError(t, err)
+
 	val, err := store.GetCounter(counterCode)
 	require.NoError(t, err)
 	assert.Equal(t, counterVal, val)
