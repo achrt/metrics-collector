@@ -21,11 +21,13 @@ func New() (*App, error) {
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
-	return &App{
+	a :=  &App{
 		Store:   storage.New(),
 		Router:  router,
 		address: cfg.Address,
-	}, nil
+	}
+	a.Store.Init()
+	return a, nil
 }
 
 func (a *App) Run() error {

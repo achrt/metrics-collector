@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
+	"github.com/achrt/metrics-collector/internal/domain/models/health"
 )
 
 type Storage struct {
@@ -18,6 +19,27 @@ func New() *Storage {
 	return &Storage{
 		m:      map[string]models.Metrics{},
 		mMutex: &sync.RWMutex{},
+	}
+}
+
+func (str *Storage) Init() {
+	v := float64(0.0)
+	d := int64(0)
+	h := health.HealthStat{}
+	for _, code := range h.MetricCodes() {
+		t, _ := h.GetType(code)
+		m := models.Metrics{
+			ID: code,
+			MType: t,
+		}
+		if t == models.TypeCounter {
+			m.Delta = &d
+		}
+		if t == models.TypeGauge {
+			m.Value = &v
+		}
+
+		str.m[code] = m
 	}
 }
 
