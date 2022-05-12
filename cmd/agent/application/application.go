@@ -68,7 +68,6 @@ func (a *App) report(ctx context.Context, cancel context.CancelFunc, monitor *me
 				log.Println(err)
 				return
 			}
-
 			// TODO: можно ассинхронно отправлять запросы;
 			// не очень понятно, нужно ли что-то дополнительно делать с ctx2
 

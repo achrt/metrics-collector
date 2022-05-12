@@ -31,25 +31,16 @@ func (h *Handler) get(c *gin.Context) (value string, status int, err error) {
 		return
 	}
 
-	if mType == models.TypeCounter {
-		var val int64
-		val, err = h.store.GetCounter(code)
-		if err != nil {
-			status = http.StatusNotFound
-			err = errors.New(http.StatusText(status))
-			return
-		}
-		value = fmt.Sprintf("%v", val)
+	m, err := h.store.Get(code)
+
+	if mType == models.TypeCounter && m.Delta != nil {
+		value = fmt.Sprintf("%v", *m.Delta)
 		return
 	}
 
-	var val float64
-	val, err = h.store.GetMetric(code)
-	if err != nil {
-		status = http.StatusNotFound
-		err = errors.New(http.StatusText(status))
-		return
+	if m.Value != nil {
+		value = fmt.Sprintf("%v", *m.Value)
 	}
-	value = fmt.Sprintf("%v", val)
+
 	return
 }

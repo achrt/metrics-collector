@@ -20,16 +20,11 @@ func (h *Handler) List(c *gin.Context) {
 }
 
 func (h *Handler) list(c *gin.Context) string {
-	counters := h.store.GetCounters()
-	metrics := h.store.GetMetrics()
+	metrics := h.store.PrintMetrics()
 	list := []string{}
 
-	for code, val := range counters {
-		list = append(list, fmt.Sprintf("<li>%s: %d</li>", code, val))
-	}
-
 	for code, val := range metrics {
-		list = append(list, fmt.Sprintf("<li>%s: %v</li>", code, val))
+		list = append(list, fmt.Sprintf("<li>%s: %s</li>", code, val))
 	}
 
 	return fmt.Sprintf("<html><body><ul>%s</ul></body></html>", strings.Join(list, "\n"))

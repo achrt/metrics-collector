@@ -38,7 +38,14 @@ func (h *Handler) update(c *gin.Context) (status int, err error) {
 			status = http.StatusBadRequest
 			return
 		}
-		err = h.store.UpdateCounter(code, value)
+		m := models.Metrics{
+			ID:    code,
+			MType: mType,
+			Delta: &value,
+		}
+		if err = h.store.Set(code, m); err != nil {
+			status = http.StatusInternalServerError
+		}
 		return
 	}
 
@@ -49,9 +56,14 @@ func (h *Handler) update(c *gin.Context) (status int, err error) {
 		return
 	}
 
-	if err = h.store.UpdateMetric(code, value); err != nil {
+	m := models.Metrics{
+		ID:    code,
+		MType: mType,
+		Value: &value,
+	}
+
+	if err = h.store.Set(code, m); err != nil {
 		status = http.StatusInternalServerError
-		return
 	}
 	return
 }
