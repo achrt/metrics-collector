@@ -22,14 +22,20 @@ type App struct {
 	sender *sender.Client
 }
 
-func New(reportInterval, duration int64, metricServerAddress string) *App {
-	return &App{
-		reportInterval:      reportInterval,
-		reportTimerDuration: duration,
-		sender:              sender.New(),
-		reqTimeout:          2,
-		metricServerAddress: metricServerAddress,
+const reqTimeout = 2
+
+func New() (*App, error) {
+	cfg, err := loadConfiguration()
+	if err != nil {
+		return nil, err
 	}
+	return &App{
+		reportInterval:      int64(cfg.ReportInterval),
+		reportTimerDuration: int64(cfg.ReportInterval),
+		sender:              sender.New(),
+		metricServerAddress: "http://" + cfg.Address,
+		reqTimeout:          reqTimeout,
+	}, nil
 }
 
 func (a *App) Run(ctx context.Context, cancel context.CancelFunc) {

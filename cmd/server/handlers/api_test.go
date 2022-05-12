@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"testing"
 
 	"github.com/achrt/metrics-collector/cmd/server/application"
@@ -11,7 +12,11 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	app := application.New()
+	app, err := application.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	h = New(app)
 	h.Router()
 	m.Run()

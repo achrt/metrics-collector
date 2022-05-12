@@ -2,20 +2,18 @@ package application
 
 import (
 	"context"
+	"log"
 	"testing"
 	"time"
-)
-
-const (
-	duration       = 1
-	reportInterval = 2
-	msaddress      = ""
 )
 
 var app *App
 
 func TestMain(m *testing.M) {
-	app = New(reportInterval, duration, msaddress)
+	var err error
+	if app, err = New(); err != nil {
+		log.Fatal(err)
+	}
 	m.Run()
 }
 
