@@ -32,6 +32,11 @@ func (r *Request) SetURL(value string) *Request {
 	return r
 }
 
+func (r *Request) SetBody(value interface{}) *Request {
+	r.Body = value
+	return r
+}
+
 func (r *Request) SetTimeout(timeout int) *Request {
 	r.timeout = timeout
 	return r

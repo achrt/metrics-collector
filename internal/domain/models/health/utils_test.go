@@ -3,6 +3,7 @@ package health
 import (
 	"testing"
 
+	"github.com/achrt/metrics-collector/internal/domain/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,5 +21,5 @@ func TestMetricData(t *testing.T) {
 	mType, val, err := hs.MetricData(Alloc)
 	require.NoError(t, err)
 	assert.Equal(t, testDataVal, val)
-	assert.Equal(t, TypeGauge, mType)
+	assert.Equal(t, models.TypeGauge, mType)
 }

@@ -32,7 +32,4 @@ const (
 	RandomValue   = "randomvalue"
 )
 
-const (
-	TypeGauge   = "gauge"
-	TypeCounter = "counter"
-)
+

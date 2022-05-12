@@ -9,6 +9,7 @@ import (
 
 	"github.com/achrt/metrics-collector/cmd/agent/metrics"
 	sc "github.com/achrt/metrics-collector/internal/controller"
+	"github.com/achrt/metrics-collector/internal/domain/models"
 	"github.com/achrt/metrics-collector/internal/sender"
 )
 
@@ -47,16 +48,16 @@ func (a *App) Run(ctx context.Context, cancel context.CancelFunc) {
 func (a *App) report(ctx context.Context, cancel context.CancelFunc, monitor *metrics.Monitor) {
 	defer cancel()
 
-	var mType, value string
-	var err error
 	var status int
+	var m models.Metrics
+	var err error
 
 	metrics := monitor.MetricCodes()
 	for {
 		<-time.After(time.Duration(a.reportInterval) * time.Second)
 
 		for _, metric := range metrics {
-			mType, value, err = monitor.MetricData(metric)
+			m, err = monitor.MetricDataModel(metric)
 			if err != nil {
 				log.Println(err)
 				return
@@ -67,11 +68,12 @@ func (a *App) report(ctx context.Context, cancel context.CancelFunc, monitor *me
 
 			ctx2, cancel2 := context.WithCancel(ctx)
 
-			url := fmt.Sprintf("%s/update/%s/%s/%s", a.metricServerAddress, mType, metric, value)
+			url := fmt.Sprintf("%s/update/", a.metricServerAddress)
 
 			status, err = sender.New().R().
 				SetURL(url).
 				SetTimeout(a.reqTimeout).
+				SetBody(m).
 				SetHeader("Content-Type", "text/plain").
 				Post(ctx2, cancel2)
 

@@ -27,6 +27,9 @@ func (h *Handler) Router() {
 
 	h.router.GET("/", h.List)
 	h.router.GET("/health", h.Health)
-	h.router.POST("/update/:type/:code/:value", h.Update)
 	h.router.GET("/value/:type/:name", h.Get)
+
+	h.router.POST("/value/", h.GetMetrics)
+	h.router.POST("/update/", h.UpdateMetrics)
+	h.router.POST("/update/:type/:code/:value", h.Update)
 }

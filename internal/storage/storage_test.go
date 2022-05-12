@@ -3,16 +3,19 @@ package storage
 import (
 	"testing"
 
+	"github.com/achrt/metrics-collector/internal/domain/models"
 	"github.com/achrt/metrics-collector/internal/domain/models/health"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 var (
-	counterCode       = "counter-code"
-	counterVal  int64 = 345
+	counterVal int64 = 345
 
-	wrongCode = "wrong-code"
+	counterCode = "counter-code"
+	wrongCode   = "wrong-code"
+
+	store *Storage
 )
 
 func TestMain(m *testing.M) {
@@ -35,7 +38,9 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestGetCounter(t *testing.T) {
-	store.UpdateCounter(counterCode, counterVal)
+	err := store.UpdateCounter(counterCode, counterVal)
+	require.NoError(t, err)
+
 	val, err := store.GetCounter(counterCode)
 	require.NoError(t, err)
 	assert.Equal(t, counterVal, val)
@@ -44,7 +49,21 @@ func TestGetCounter(t *testing.T) {
 	require.Error(t, err)
 }
 
-var store *Storage
+func TestSetGet(t *testing.T) {
+	var val float64 = 9879879
+	m := models.Metrics{
+		ID:    "Mallocs",
+		MType: "gauge",
+		Value: &val,
+	}
+
+	store.Set(m.ID, m)
+	r, err := store.Get(m.ID)
+	require.NoError(t, err)
+	assert.Equal(t, m, *r)
+
+}
+
 var storeFiller = map[string]float64{
 	health.Alloc:         125854,
 	health.BuckHashSys:   22,

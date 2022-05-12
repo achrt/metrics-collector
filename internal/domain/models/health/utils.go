@@ -5,6 +5,8 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/achrt/metrics-collector/internal/domain/models"
 )
 
 func IsExists(code string) bool {
@@ -75,6 +77,27 @@ func (h HealthStat) MetricData(code string) (metricType, value string, err error
 	default:
 		v, _ := h.Metric(code)
 		value = strconv.Itoa(int(v))
+	}
+
+	return
+}
+
+func (h HealthStat) MetricDataModel(code string) (m models.Metrics, err error) {
+	m.MType, err = h.GetType(code)
+	if err != nil {
+		return
+	}
+
+	m.ID = code
+
+	switch code {
+	case PollCount:
+		m.Delta = &h.PollCount
+	case RandomValue:
+		m.Value = &h.RandomValue
+	default:
+		v, _ := h.Metric(code)
+		m.Value = &v
 	}
 
 	return
@@ -178,33 +201,33 @@ var metricCodes = []string{
 }
 
 var metricTypes = map[string]string{
-	Alloc:         TypeGauge,
-	BuckHashSys:   TypeGauge,
-	Frees:         TypeGauge,
-	GCCPUFraction: TypeGauge,
-	GCSys:         TypeGauge,
-	HeapAlloc:     TypeGauge,
-	HeapIdle:      TypeGauge,
-	HeapInuse:     TypeGauge,
-	HeapObjects:   TypeGauge,
-	HeapReleased:  TypeGauge,
-	HeapSys:       TypeGauge,
-	LastGC:        TypeGauge,
-	Lookups:       TypeGauge,
-	MCacheInuse:   TypeGauge,
-	MCacheSys:     TypeGauge,
-	MSpanInuse:    TypeGauge,
-	MSpanSys:      TypeGauge,
-	Mallocs:       TypeGauge,
-	NextGC:        TypeGauge,
-	NumForcedGC:   TypeGauge,
-	NumGC:         TypeGauge,
-	OtherSys:      TypeGauge,
-	PauseTotalNs:  TypeGauge,
-	StackInuse:    TypeGauge,
-	StackSys:      TypeGauge,
-	Sys:           TypeGauge,
-	TotalAlloc:    TypeGauge,
-	PollCount:     TypeCounter,
-	RandomValue:   TypeGauge,
+	Alloc:         models.TypeGauge,
+	BuckHashSys:   models.TypeGauge,
+	Frees:         models.TypeGauge,
+	GCCPUFraction: models.TypeGauge,
+	GCSys:         models.TypeGauge,
+	HeapAlloc:     models.TypeGauge,
+	HeapIdle:      models.TypeGauge,
+	HeapInuse:     models.TypeGauge,
+	HeapObjects:   models.TypeGauge,
+	HeapReleased:  models.TypeGauge,
+	HeapSys:       models.TypeGauge,
+	LastGC:        models.TypeGauge,
+	Lookups:       models.TypeGauge,
+	MCacheInuse:   models.TypeGauge,
+	MCacheSys:     models.TypeGauge,
+	MSpanInuse:    models.TypeGauge,
+	MSpanSys:      models.TypeGauge,
+	Mallocs:       models.TypeGauge,
+	NextGC:        models.TypeGauge,
+	NumForcedGC:   models.TypeGauge,
+	NumGC:         models.TypeGauge,
+	OtherSys:      models.TypeGauge,
+	PauseTotalNs:  models.TypeGauge,
+	StackInuse:    models.TypeGauge,
+	StackSys:      models.TypeGauge,
+	Sys:           models.TypeGauge,
+	TotalAlloc:    models.TypeGauge,
+	PollCount:     models.TypeCounter,
+	RandomValue:   models.TypeGauge,
 }

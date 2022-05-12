@@ -2,9 +2,10 @@ package storage
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"sync"
+
+	"github.com/achrt/metrics-collector/internal/domain/models"
 )
 
 type Storage struct {
@@ -14,29 +15,60 @@ type Storage struct {
 	uMutex sync.RWMutex
 	u      map[string]float64
 
-	i map[string]interface{}
+	mMutex sync.RWMutex
+	m      map[string]models.Metrics
 }
 
 func New() *Storage {
 	return &Storage{
 		c: map[string]int64{},
 		u: map[string]float64{},
+		m: map[string]models.Metrics{},
 	}
 }
 
-func (str *Storage) Get(code string) (string, error) {
+func (str *Storage) Get(code string) (*models.Metrics, error) {
+	str.mMutex.RLock()
+	defer str.mMutex.RUnlock()
+
 	code = strings.ToLower(code)
-	if val, ok := str.i[code]; ok {
-		return fmt.Sprintf("%v", val), nil
+	if val, ok := str.m[code]; ok {
+		return &val, nil
 	}
-	return "", errors.New("unknown metric code")
+	return nil, errors.New("unknown metric code")
 }
 
-func (str *Storage) Set(code string, val interface{}) {
+func (str *Storage) Set(code string, val models.Metrics) error {
+	if code == "" {
+		return errors.New("code is an empty string")
+	}
+
+	str.mMutex.RLock()
+	defer str.mMutex.RUnlock()
+
 	code = strings.ToLower(code)
-	str.i[code] = val
+
+	if val.MType == models.TypeCounter {
+		if val.Delta == nil {
+			return errors.New("val.Delta can not be nil")
+		}
+		if str.m[code].Delta == nil {
+			str.m[code] = val
+			return nil
+		}
+		*str.m[code].Delta += *val.Delta
+	}
+
+	if val.MType == models.TypeGauge {
+		if val.Value == nil {
+			return errors.New("val.Value can not be nil")
+		}
+		str.m[code] = val
+	}
+	return nil
 }
 
+// TODO: rename methodes
 func (str *Storage) GetMetric(code string) (float64, error) {
 	str.uMutex.RLock()
 	defer str.uMutex.RUnlock()
@@ -71,16 +103,31 @@ func (str *Storage) UpdateMetric(code string, val float64) error {
 	return str.updateMetric(code, val)
 }
 
-func (str *Storage) UpdateCounter(code string, val int64) {
-	str.updateCounter(code, val)
+func (str *Storage) UpdateCounter(code string, val int64) error {
+	return str.updateCounter(code, val)
 }
 
-func (str *Storage) updateCounter(code string, val int64) {
+func (str *Storage) updateCounter(code string, val int64) error {
+	if code == "" {
+		return errors.New("code is an empty string")
+	}
+
+	str.cMutex.RLock()
+	defer str.cMutex.RUnlock()
+
 	code = strings.ToLower(code)
 	str.c[code] += val
+	return nil
 }
 
 func (str *Storage) updateMetric(code string, val float64) error {
+	if code == "" {
+		return errors.New("code is an empty string")
+	}
+
+	str.uMutex.RLock()
+	defer str.uMutex.RUnlock()
+
 	code = strings.ToLower(code)
 	str.u[code] = val
 	return nil
