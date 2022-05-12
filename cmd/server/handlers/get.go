@@ -32,6 +32,10 @@ func (h *Handler) get(c *gin.Context) (value string, status int, err error) {
 	}
 
 	m, err := h.store.Get(code)
+	if err != nil {
+		status = http.StatusNotFound
+		return
+	}
 
 	if mType == models.TypeCounter && m.Delta != nil {
 		value = fmt.Sprintf("%v", *m.Delta)
