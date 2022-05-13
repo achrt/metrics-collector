@@ -19,14 +19,18 @@ func New() (*App, error) {
 		return nil, err
 	}
 
+	s, err := storage.New(cfg.StoreFile, cfg.StoreInterval)
+	if err != nil {
+		return nil, err
+	}
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
-	a :=  &App{
-		Store:   storage.New(),
+	a := &App{
+		Store:   s,
 		Router:  router,
 		address: cfg.Address,
 	}
-	a.Store.Init()
 	return a, nil
 }
 

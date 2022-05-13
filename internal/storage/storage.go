@@ -5,42 +5,45 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
-	"github.com/achrt/metrics-collector/internal/domain/models/health"
 )
 
 type Storage struct {
 	mMutex *sync.RWMutex
 	m      map[string]models.Metrics
+
+	castTicker   uint32 // кол-во секунд между вызовом Cast(); если 0, то сохранение при каждом обновлении
+	saveToDisk   bool
+	saveOnUpdate bool
+
+	*producer
+	*consumer
 }
 
-func New() *Storage {
-	return &Storage{
-		m:      map[string]models.Metrics{},
-		mMutex: &sync.RWMutex{},
+func New(filePath string, castTicker uint32) (s *Storage, err error) {
+	s = &Storage{
+		m:            map[string]models.Metrics{},
+		mMutex:       &sync.RWMutex{},
+		castTicker:   castTicker,
+		saveOnUpdate: castTicker == 0,
+		saveToDisk:   filePath != "",
 	}
-}
-
-func (str *Storage) Init() {
-	v := float64(0.0)
-	d := int64(0)
-	h := health.HealthStat{}
-	for _, code := range h.MetricCodes() {
-		t, _ := h.GetType(code)
-		m := models.Metrics{
-			ID: code,
-			MType: t,
+	if s.saveToDisk {
+		if s.producer, err = newProducer(filePath); err != nil {
+			return
 		}
-		if t == models.TypeCounter {
-			m.Delta = &d
-		}
-		if t == models.TypeGauge {
-			m.Value = &v
+		if s.consumer, err = newConsumer(filePath); err != nil {
+			return
 		}
 
-		str.m[code] = m
+		if !s.saveOnUpdate {
+			go s.writer()
+		}
 	}
+
+	return
 }
 
 func (str *Storage) Get(code string) (*models.Metrics, error) {
@@ -78,6 +81,12 @@ func (str *Storage) Set(code string, val models.Metrics) error {
 		}
 		str.m[code] = val
 	}
+
+	if str.saveToDisk && str.saveOnUpdate {
+		if err := str.Cast(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -92,4 +101,39 @@ func (s Storage) PrintMetrics() map[string]string {
 		}
 	}
 	return res
+}
+
+// Load() загружает метрики из файла в in-memory хранилище
+func (s *Storage) Load() error {
+	m, err := s.consumer.read()
+	if err != nil {
+		return err
+	}
+	for _, mt := range m {
+		s.Set(mt.ID, *mt)
+	}
+	return nil
+}
+
+// Cast() выгружает данные из in-memory в файл
+func (s Storage) Cast() error {
+	mtr := []models.Metrics{}
+	for _, m := range s.m {
+		mtr = append(mtr, m)
+	}
+	return s.producer.write(mtr)
+}
+
+func (s Storage) Close() {
+	if s.saveToDisk {
+		s.consumer.close()
+		s.producer.close()
+	}
+}
+
+func (s Storage) writer() {
+	for {
+		<-time.After(time.Duration(s.castTicker) * time.Second)
+		s.Cast()
+	}
 }

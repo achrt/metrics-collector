@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"log"
 	"testing"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
@@ -11,10 +12,18 @@ import (
 
 var (
 	store *Storage
+	err   error
 )
 
+const filePath = "./metrics.json"
+
 func TestMain(m *testing.M) {
-	store = New()
+	store, err = New(filePath, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer store.Close()
+	store.Load()
 	m.Run()
 }
 
