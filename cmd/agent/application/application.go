@@ -79,7 +79,7 @@ func (a *App) report(ctx context.Context, cancel context.CancelFunc, monitor *me
 				SetURL(url).
 				SetTimeout(a.reqTimeout).
 				SetBody(m).
-				SetHeader("Content-Type", "text/plain").
+				SetHeader("Content-Type", "application/json").
 				Post(ctx2, cancel2)
 
 			if err != nil {

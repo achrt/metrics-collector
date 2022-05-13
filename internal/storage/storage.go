@@ -46,21 +46,21 @@ func New(filePath string, castTicker uint32) (s *Storage, err error) {
 	return
 }
 
-func (str *Storage) Get(code string) (*models.Metrics, error) {
+func (s *Storage) Get(code string) (*models.Metrics, error) {
 	code = strings.ToLower(code)
-	if val, ok := str.m[code]; ok {
+	if val, ok := s.m[code]; ok {
 		return &val, nil
 	}
 	return nil, errors.New("unknown metric code")
 }
 
-func (str *Storage) Set(code string, val models.Metrics) error {
+func (s *Storage) Set(code string, val models.Metrics) error {
 	if code == "" {
 		return errors.New("code is an empty string")
 	}
 
-	str.mMutex.RLock()
-	defer str.mMutex.RUnlock()
+	s.mMutex.RLock()
+	defer s.mMutex.RUnlock()
 
 	code = strings.ToLower(code)
 
@@ -68,22 +68,22 @@ func (str *Storage) Set(code string, val models.Metrics) error {
 		if val.Delta == nil {
 			return errors.New("val.Delta can not be nil")
 		}
-		if str.m[code].Delta == nil {
-			str.m[code] = val
+		if s.m[code].Delta == nil {
+			s.m[code] = val
 			return nil
 		}
-		*str.m[code].Delta += *val.Delta
+		*s.m[code].Delta += *val.Delta
 	}
 
 	if val.MType == models.TypeGauge {
 		if val.Value == nil {
 			return errors.New("val.Value can not be nil")
 		}
-		str.m[code] = val
+		s.m[code] = val
 	}
 
-	if str.saveToDisk && str.saveOnUpdate {
-		if err := str.Cast(); err != nil {
+	if s.saveToDisk && s.saveOnUpdate {
+		if err := s.Cast(); err != nil {
 			return err
 		}
 	}
