@@ -19,7 +19,7 @@ const (
 	MSpanInuse    = "mspaninuse"
 	MSpanSys      = "mspansys"
 	Mallocs       = "mallocs"
-	NextGC        = "nextgs"
+	NextGC        = "nextgc"
 	NumForcedGC   = "numforcedgc"
 	NumGC         = "numgc"
 	OtherSys      = "othersys"
