@@ -17,9 +17,7 @@ type Storage struct {
 	castTicker   uint32 // кол-во секунд между вызовом Cast(); если 0, то сохранение при каждом обновлении
 	saveToDisk   bool
 	saveOnUpdate bool
-
-	*producer
-	*consumer
+	logFile      string
 }
 
 func New(filePath string, castTicker uint32) (s *Storage, err error) {
@@ -28,14 +26,9 @@ func New(filePath string, castTicker uint32) (s *Storage, err error) {
 		castTicker:   castTicker,
 		saveOnUpdate: castTicker == 0,
 		saveToDisk:   filePath != "",
+		logFile:      filePath,
 	}
 	if s.saveToDisk {
-		if s.producer, err = newProducer(filePath); err != nil {
-			return
-		}
-		if s.consumer, err = newConsumer(filePath); err != nil {
-			return
-		}
 
 		if !s.saveOnUpdate {
 			go s.writer()
@@ -89,10 +82,11 @@ func (s *Storage) set(code string, val models.Metrics) error {
 	}
 
 	if s.saveToDisk && s.saveOnUpdate {
-		if err := s.Cast(); err != nil {
+		if err := s.cast(); err != nil {
 			return err
 		}
 	}
+	
 	return nil
 }
 
@@ -114,12 +108,19 @@ func (s *Storage) PrintMetrics() map[string]string {
 
 // Load() загружает метрики из файла в in-memory хранилище
 func (s *Storage) Load() error {
-	m, err := s.consumer.read()
+
+	consumer, err := newConsumer(s.logFile)
+	if err != nil {
+		return err
+	}
+	defer consumer.close()
+
+	m, err := consumer.read()
 	if err != nil {
 		return err
 	}
 	for _, mt := range m {
-		s.Set(mt.ID, *mt)
+		s.set(mt.ID, *mt)
 	}
 	return nil
 }
@@ -128,19 +129,23 @@ func (s *Storage) Load() error {
 func (s *Storage) Cast() error {
 	s.RLock()
 	defer s.RUnlock()
-	
+
+	return s.cast()
+}
+
+func (s *Storage) cast() error {
 	mtr := []models.Metrics{}
 	for _, m := range s.m {
 		mtr = append(mtr, m)
 	}
-	return s.producer.write(mtr)
-}
 
-func (s *Storage) Close() {
-	if s.saveToDisk {
-		s.consumer.close()
-		s.producer.close()
+	producer, err := newProducer(s.logFile)
+	if err != nil {
+		return err
 	}
+
+	defer producer.close()
+	return producer.write(mtr)
 }
 
 func (s *Storage) writer() {

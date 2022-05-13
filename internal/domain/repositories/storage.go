@@ -10,5 +10,4 @@ type Storage interface {
 
 	Load() error // загрузка метрик в in-memory из файла
 	Cast() error // загрузка метрик в файл из in-memory
-	Close()      // должен быть вызван при штатном завершении работы программы
 }

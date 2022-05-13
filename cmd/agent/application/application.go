@@ -75,7 +75,7 @@ func (a *App) report(ctx context.Context, cancel context.CancelFunc, monitor *me
 			// не очень понятно, нужно ли что-то дополнительно делать с ctx2
 			wg.Add(1)
 
-			go func() {
+			go func(m models.Metrics) {
 				defer wg.Done()
 
 				ctx2, cancel2 := context.WithCancel(ctx)
@@ -97,7 +97,7 @@ func (a *App) report(ctx context.Context, cancel context.CancelFunc, monitor *me
 				if status != http.StatusOK {
 					log.Println("request response status: ", status)
 				}
-			}()
+			}(m)
 		}
 
 		wg.Wait()

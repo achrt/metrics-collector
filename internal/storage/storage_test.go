@@ -22,7 +22,6 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer store.Close()
 	store.Load()
 	m.Run()
 }
