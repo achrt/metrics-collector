@@ -1,6 +1,8 @@
 package application
 
 import (
+	"log"
+
 	"github.com/achrt/metrics-collector/internal/domain/repositories"
 	"github.com/achrt/metrics-collector/internal/storage"
 	"github.com/gin-gonic/gin"
@@ -35,5 +37,6 @@ func New() (*App, error) {
 }
 
 func (a *App) Run() error {
+	log.Println("server is up and running in address: ", a.address)
 	return a.Router.Run(a.address)
 }
