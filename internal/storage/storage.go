@@ -11,8 +11,8 @@ import (
 )
 
 type Storage struct {
-	mMutex *sync.RWMutex
-	m      map[string]models.Metrics
+	sync.RWMutex
+	m map[string]models.Metrics
 
 	castTicker   uint32 // кол-во секунд между вызовом Cast(); если 0, то сохранение при каждом обновлении
 	saveToDisk   bool
@@ -25,7 +25,6 @@ type Storage struct {
 func New(filePath string, castTicker uint32) (s *Storage, err error) {
 	s = &Storage{
 		m:            map[string]models.Metrics{},
-		mMutex:       &sync.RWMutex{},
 		castTicker:   castTicker,
 		saveOnUpdate: castTicker == 0,
 		saveToDisk:   filePath != "",
@@ -47,6 +46,9 @@ func New(filePath string, castTicker uint32) (s *Storage, err error) {
 }
 
 func (s *Storage) Get(code string) (*models.Metrics, error) {
+	s.RLock()
+	defer s.RUnlock()
+
 	code = strings.ToLower(code)
 	if val, ok := s.m[code]; ok {
 		return &val, nil
@@ -59,9 +61,13 @@ func (s *Storage) Set(code string, val models.Metrics) error {
 		return errors.New("code is an empty string")
 	}
 
-	s.mMutex.RLock()
-	defer s.mMutex.RUnlock()
+	s.Lock()
+	defer s.Unlock()
 
+	return s.set(code, val)
+}
+
+func (s *Storage) set(code string, val models.Metrics) error {
 	code = strings.ToLower(code)
 
 	if val.MType == models.TypeCounter {
@@ -90,7 +96,10 @@ func (s *Storage) Set(code string, val models.Metrics) error {
 	return nil
 }
 
-func (s Storage) PrintMetrics() map[string]string {
+func (s *Storage) PrintMetrics() map[string]string {
+	s.RLock()
+	defer s.RUnlock()
+
 	res := map[string]string{}
 	for code, val := range s.m {
 		if val.Delta != nil {
@@ -116,7 +125,10 @@ func (s *Storage) Load() error {
 }
 
 // Cast() выгружает данные из in-memory в файл
-func (s Storage) Cast() error {
+func (s *Storage) Cast() error {
+	s.RLock()
+	defer s.RUnlock()
+	
 	mtr := []models.Metrics{}
 	for _, m := range s.m {
 		mtr = append(mtr, m)
@@ -124,14 +136,14 @@ func (s Storage) Cast() error {
 	return s.producer.write(mtr)
 }
 
-func (s Storage) Close() {
+func (s *Storage) Close() {
 	if s.saveToDisk {
 		s.consumer.close()
 		s.producer.close()
 	}
 }
 
-func (s Storage) writer() {
+func (s *Storage) writer() {
 	for {
 		<-time.After(time.Duration(s.castTicker) * time.Second)
 		s.Cast()
