@@ -10,43 +10,12 @@ import (
 )
 
 var (
-	counterVal int64 = 345
-
-	counterCode = "counter-code"
-	wrongCode   = "wrong-code"
-
 	store *Storage
 )
 
 func TestMain(m *testing.M) {
 	store = New()
 	m.Run()
-}
-
-func TestUpdate(t *testing.T) {
-	for code, val := range storeFiller {
-		err := store.UpdateMetric(code, val)
-		require.NoError(t, err)
-
-		value, err := store.GetMetric(code)
-		require.NoError(t, err)
-		assert.Equal(t, val, value)
-	}
-
-	_, err := store.GetMetric(wrongCode)
-	require.Error(t, err)
-}
-
-func TestGetCounter(t *testing.T) {
-	err := store.UpdateCounter(counterCode, counterVal)
-	require.NoError(t, err)
-
-	val, err := store.GetCounter(counterCode)
-	require.NoError(t, err)
-	assert.Equal(t, counterVal, val)
-
-	_, err = store.GetCounter(wrongCode)
-	require.Error(t, err)
 }
 
 func TestSetGet(t *testing.T) {
@@ -64,7 +33,7 @@ func TestSetGet(t *testing.T) {
 
 }
 
-var storeFiller = map[string]float64{
+var StoreFiller = map[string]float64{
 	health.Alloc:         125854,
 	health.BuckHashSys:   22,
 	health.Frees:         37969,

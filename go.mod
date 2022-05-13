@@ -3,6 +3,7 @@ module github.com/achrt/metrics-collector
 go 1.18
 
 require (
+	github.com/caarlos0/env/v6 v6.9.2
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/assert/v2 v2.0.1
 	github.com/stretchr/testify v1.7.1

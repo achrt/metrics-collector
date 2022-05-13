@@ -9,17 +9,27 @@ import (
 type App struct {
 	Store  repositories.Storage
 	Router *gin.Engine
+
+	address string
 }
 
-func New() *App {
+func New() (*App, error) {
+	cfg, err := loadConfiguration()
+	if err != nil {
+		return nil, err
+	}
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
-	return &App{
-		Store:  storage.New(),
-		Router: router,
+	a :=  &App{
+		Store:   storage.New(),
+		Router:  router,
+		address: cfg.Address,
 	}
+	a.Store.Init()
+	return a, nil
 }
 
-func (a *App) Run(address string) error {
-	return a.Router.Run(address)
+func (a *App) Run() error {
+	return a.Router.Run(a.address)
 }

@@ -2,35 +2,48 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
+	"github.com/achrt/metrics-collector/internal/domain/models/health"
 )
 
 type Storage struct {
-	cMutex sync.RWMutex
-	c      map[string]int64
-
-	uMutex sync.RWMutex
-	u      map[string]float64
-
-	mMutex sync.RWMutex
+	mMutex *sync.RWMutex
 	m      map[string]models.Metrics
 }
 
 func New() *Storage {
 	return &Storage{
-		c: map[string]int64{},
-		u: map[string]float64{},
-		m: map[string]models.Metrics{},
+		m:      map[string]models.Metrics{},
+		mMutex: &sync.RWMutex{},
+	}
+}
+
+func (str *Storage) Init() {
+	v := float64(0.0)
+	d := int64(0)
+	h := health.HealthStat{}
+	for _, code := range h.MetricCodes() {
+		t, _ := h.GetType(code)
+		m := models.Metrics{
+			ID: code,
+			MType: t,
+		}
+		if t == models.TypeCounter {
+			m.Delta = &d
+		}
+		if t == models.TypeGauge {
+			m.Value = &v
+		}
+
+		str.m[code] = m
 	}
 }
 
 func (str *Storage) Get(code string) (*models.Metrics, error) {
-	str.mMutex.RLock()
-	defer str.mMutex.RUnlock()
-
 	code = strings.ToLower(code)
 	if val, ok := str.m[code]; ok {
 		return &val, nil
@@ -68,67 +81,15 @@ func (str *Storage) Set(code string, val models.Metrics) error {
 	return nil
 }
 
-// TODO: rename methodes
-func (str *Storage) GetMetric(code string) (float64, error) {
-	str.uMutex.RLock()
-	defer str.uMutex.RUnlock()
-
-	code = strings.ToLower(code)
-	if val, ok := str.u[code]; ok {
-		return val, nil
+func (s Storage) PrintMetrics() map[string]string {
+	res := map[string]string{}
+	for code, val := range s.m {
+		if val.Delta != nil {
+			res[code] = fmt.Sprintf("%v", *val.Delta)
+		}
+		if val.Value != nil {
+			res[code] = fmt.Sprintf("%v", *val.Value)
+		}
 	}
-	return 0, errors.New("unknown metric code")
-}
-
-func (str *Storage) GetMetrics() map[string]float64 {
-	return str.u
-}
-
-func (str *Storage) GetCounters() map[string]int64 {
-	return str.c
-}
-
-func (str *Storage) GetCounter(code string) (int64, error) {
-	str.cMutex.RLock()
-	defer str.cMutex.RUnlock()
-
-	code = strings.ToLower(code)
-	if val, ok := str.c[code]; ok {
-		return val, nil
-	}
-	return 0, errors.New("unknown counter code")
-}
-
-func (str *Storage) UpdateMetric(code string, val float64) error {
-	return str.updateMetric(code, val)
-}
-
-func (str *Storage) UpdateCounter(code string, val int64) error {
-	return str.updateCounter(code, val)
-}
-
-func (str *Storage) updateCounter(code string, val int64) error {
-	if code == "" {
-		return errors.New("code is an empty string")
-	}
-
-	str.cMutex.RLock()
-	defer str.cMutex.RUnlock()
-
-	code = strings.ToLower(code)
-	str.c[code] += val
-	return nil
-}
-
-func (str *Storage) updateMetric(code string, val float64) error {
-	if code == "" {
-		return errors.New("code is an empty string")
-	}
-
-	str.uMutex.RLock()
-	defer str.uMutex.RUnlock()
-
-	code = strings.ToLower(code)
-	str.u[code] = val
-	return nil
+	return res
 }

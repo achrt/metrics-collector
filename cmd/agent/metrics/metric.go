@@ -11,9 +11,6 @@ import (
 type Monitor struct {
 	health.HealthStat
 
-	pollCount   int
-	randomValue uint64
-
 	duration int64
 }
 
@@ -28,20 +25,18 @@ func (m *Monitor) Run(ctx context.Context, cancel context.CancelFunc) {
 	for {
 		<-time.After(interval)
 		m.updateMetrics()
-		m.pollCount++
+		m.updateRandom()
+		m.PollCount++
 	}
-}
-
-func (m *Monitor) PollCount() int {
-	return m.pollCount
-}
-
-func (m *Monitor) RandomValue() uint64 {
-	return m.randomValue
 }
 
 func (m *Monitor) updateMetrics() {
 	ms := runtime.MemStats{}
 	runtime.ReadMemStats(&ms)
 	m.SetMetrics(ms)
+}
+
+func (m *Monitor) updateRandom() {
+	// TODO: не понятно, зачем это поле, пока пусть будет UnixMicro
+	m.RandomValue = float64(time.Now().UnixMicro())
 }

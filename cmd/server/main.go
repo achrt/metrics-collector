@@ -2,22 +2,19 @@ package main
 
 import (
 	"log"
-	"net"
 
 	"github.com/achrt/metrics-collector/cmd/server/application"
 	"github.com/achrt/metrics-collector/cmd/server/handlers"
 )
 
-const (
-	host = "127.0.0.1"
-	port = "8080"
-)
-
 func main() {
 
-	app := application.New()
+	app, err := application.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 	handler := handlers.New(app)
 	handler.Router()
 
-	log.Fatal(app.Run(net.JoinHostPort(host, port)))
+	log.Fatal(app.Run())
 }
