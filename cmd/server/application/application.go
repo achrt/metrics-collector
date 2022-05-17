@@ -26,6 +26,12 @@ func New() (*App, error) {
 		return nil, err
 	}
 
+	if cfg.Restore {
+		if err = s.Load(); err != nil {
+			return nil, err
+		}
+	}
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
 	a := &App{

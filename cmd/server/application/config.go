@@ -1,7 +1,17 @@
 package application
 
 import (
+	"flag"
+	"log"
+
 	"github.com/caarlos0/env/v6"
+)
+
+const (
+	dAddress       = "127.0.0.1:8080"
+	dRestore       = true
+	dStoreInterval = 10
+	dStFile        = "/tmp/devops-metrics-db.json"
 )
 
 type Config struct {
@@ -12,6 +22,32 @@ type Config struct {
 }
 
 func loadConfiguration() (cfg Config, err error) {
-	err = env.Parse(&cfg)
-	return
+	fAdd := flag.String("a", dAddress, "host:port")
+	fRestore := flag.Bool("r", dRestore, "restore previous metrics")
+	fStInetrval := flag.Int("i", dStoreInterval, "an interval between metrics storing")
+	fStFile := flag.String("f", dStFile, "storage file address")
+	flag.Parse()
+
+	if err = env.Parse(&cfg); err != nil {
+		return
+	}
+
+	log.Println(cfg)
+
+	if cfg.Address == dAddress && fAdd != nil && *fAdd != dAddress {
+		cfg.Address = *fAdd
+	}
+	if cfg.StoreFile == dStFile && fStFile != nil && *fStFile != dStFile {
+		cfg.StoreFile = *fStFile
+	}
+	if cfg.StoreInterval == dStoreInterval && fStInetrval != nil && *fStInetrval != dStoreInterval {
+		cfg.StoreInterval = uint32(*fStInetrval)
+	}
+	if cfg.Restore && fRestore != nil && !*fRestore {
+		cfg.Restore = *fRestore
+	}
+
+	log.Println(cfg)
+	
+	return cfg, nil
 }
