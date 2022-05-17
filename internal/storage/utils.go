@@ -53,8 +53,8 @@ func newConsumer(filename string) (*consumer, error) {
 
 func (c *consumer) read() ([]*models.Metrics, error) {
 	m := []*models.Metrics{}
-	err := c.decoder.Decode(&m)
-	return m, err
+	c.decoder.Decode(&m)
+	return m, nil
 }
 
 func (c *consumer) close() error {
