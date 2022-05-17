@@ -16,8 +16,8 @@ type App struct {
 }
 
 func New() (*App, error) {
-	cfg, err := loadConfiguration()
-	if err != nil {
+	cfg := Config{}
+	if err := cfg.loadConfiguration(); err != nil {
 		return nil, err
 	}
 

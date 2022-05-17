@@ -19,8 +19,7 @@ type Config struct {
 	PollInterval   uint32 `env:"POLL_INTERVAL" envDefault:"2"`
 }
 
-func loadConfiguration() (cfg *Config, err error) {
-	cfg = &Config{}
+func (c *Config) loadConfiguration() error {
 
 	fAdd := flag.String("a", dAddress, "server address - host:port")
 	fReportInetrval := flag.Int("r", dReportInterval, "an interval between metrics sendidng")
@@ -28,23 +27,23 @@ func loadConfiguration() (cfg *Config, err error) {
 
 	flag.Parse()
 
-	if err = env.Parse(cfg); err != nil {
-		return
+	if err := env.Parse(c); err != nil {
+		return err
 	}
 
-	log.Println(cfg)
+	log.Println(c)
 
-	if cfg.Address == dAddress && fAdd != nil && *fAdd != dAddress {
-		cfg.Address = *fAdd
+	if c.Address == dAddress && fAdd != nil && *fAdd != dAddress {
+		c.Address = *fAdd
 	}
-	if cfg.ReportInterval == dReportInterval && fReportInetrval != nil && *fReportInetrval != dReportInterval {
-		cfg.ReportInterval = uint32(*fReportInetrval)
+	if c.ReportInterval == dReportInterval && fReportInetrval != nil && *fReportInetrval != dReportInterval {
+		c.ReportInterval = uint32(*fReportInetrval)
 	}
-	if cfg.PollInterval == dPollInterval && fPollInetrval != nil && *fPollInetrval != dPollInterval {
-		cfg.PollInterval = uint32(*fPollInetrval)
+	if c.PollInterval == dPollInterval && fPollInetrval != nil && *fPollInetrval != dPollInterval {
+		c.PollInterval = uint32(*fPollInetrval)
 	}
 
-	log.Println(cfg)
+	log.Println(c)
 
-	return
+	return nil
 }

@@ -26,10 +26,11 @@ type App struct {
 const reqTimeout = 2
 
 func New() (*App, error) {
-	cfg, err := loadConfiguration()
-	if err != nil {
+	cfg := Config{}
+	if err := cfg.loadConfiguration(); err != nil {
 		return nil, err
 	}
+	
 	return &App{
 		reportInterval:      int64(cfg.ReportInterval),
 		reportTimerDuration: int64(cfg.ReportInterval),

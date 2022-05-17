@@ -21,34 +21,32 @@ type Config struct {
 	Restore       bool   `env:"RESTORE" envDefault:"true"`
 }
 
-func loadConfiguration() (cfg *Config, err error) {
-	cfg = &Config{}
-
+func (c *Config) loadConfiguration() error {
 	fAdd := flag.String("a", dAddress, "host:port")
 	fRestore := flag.Bool("r", dRestore, "restore previous metrics")
 	fStInetrval := flag.Int("i", dStoreInterval, "an interval between metrics storing")
 	fStFile := flag.String("f", dStFile, "storage file address")
 	flag.Parse()
 
-	if err = env.Parse(cfg); err != nil {
-		return
+	if err := env.Parse(c); err != nil {
+		return err
 	}
 
-	log.Println(cfg)
+	log.Println(c)
 
-	if cfg.Address == dAddress && fAdd != nil && *fAdd != dAddress {
-		cfg.Address = *fAdd
+	if c.Address == dAddress && fAdd != nil && *fAdd != dAddress {
+		c.Address = *fAdd
 	}
-	if cfg.StoreFile == dStFile && fStFile != nil && *fStFile != dStFile {
-		cfg.StoreFile = *fStFile
+	if c.StoreFile == dStFile && fStFile != nil && *fStFile != dStFile {
+		c.StoreFile = *fStFile
 	}
-	if cfg.StoreInterval == dStoreInterval && fStInetrval != nil && *fStInetrval != dStoreInterval {
-		cfg.StoreInterval = uint32(*fStInetrval)
+	if c.StoreInterval == dStoreInterval && fStInetrval != nil && *fStInetrval != dStoreInterval {
+		c.StoreInterval = uint32(*fStInetrval)
 	}
-	if cfg.Restore && fRestore != nil && !*fRestore {
-		cfg.Restore = *fRestore
+	if c.Restore && fRestore != nil && !*fRestore {
+		c.Restore = *fRestore
 	}
 
-	log.Println(cfg)
-	return
+	log.Println(c)
+	return nil
 }
