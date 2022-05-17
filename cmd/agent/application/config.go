@@ -19,7 +19,8 @@ type Config struct {
 	PollInterval   uint32 `env:"POLL_INTERVAL" envDefault:"2"`
 }
 
-func loadConfiguration() (cfg Config, err error) {
+func loadConfiguration() (cfg *Config, err error) {
+	cfg = &Config{}
 
 	fAdd := flag.String("a", dAddress, "server address - host:port")
 	fReportInetrval := flag.Int("r", dReportInterval, "an interval between metrics sendidng")
@@ -27,7 +28,7 @@ func loadConfiguration() (cfg Config, err error) {
 
 	flag.Parse()
 
-	if err = env.Parse(&cfg); err != nil {
+	if err = env.Parse(cfg); err != nil {
 		return
 	}
 

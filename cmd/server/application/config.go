@@ -21,14 +21,16 @@ type Config struct {
 	Restore       bool   `env:"RESTORE" envDefault:"true"`
 }
 
-func loadConfiguration() (cfg Config, err error) {
+func loadConfiguration() (cfg *Config, err error) {
+	cfg = &Config{}
+
 	fAdd := flag.String("a", dAddress, "host:port")
 	fRestore := flag.Bool("r", dRestore, "restore previous metrics")
 	fStInetrval := flag.Int("i", dStoreInterval, "an interval between metrics storing")
 	fStFile := flag.String("f", dStFile, "storage file address")
 	flag.Parse()
 
-	if err = env.Parse(&cfg); err != nil {
+	if err = env.Parse(cfg); err != nil {
 		return
 	}
 
@@ -48,6 +50,5 @@ func loadConfiguration() (cfg Config, err error) {
 	}
 
 	log.Println(cfg)
-
-	return cfg, nil
+	return
 }
