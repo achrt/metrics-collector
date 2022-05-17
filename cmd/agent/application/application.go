@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/achrt/metrics-collector/cmd/agent/metrics"
@@ -62,33 +63,43 @@ func (a *App) report(ctx context.Context, cancel context.CancelFunc, monitor *me
 	for {
 		<-time.After(time.Duration(a.reportInterval) * time.Second)
 
+		var wg sync.WaitGroup
+
 		for _, metric := range metrics {
+
 			m, err = monitor.MetricDataModel(metric)
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			// TODO: можно ассинхронно отправлять запросы;
 			// не очень понятно, нужно ли что-то дополнительно делать с ctx2
+			wg.Add(1)
 
-			ctx2, cancel2 := context.WithCancel(ctx)
+			go func(m models.Metrics) {
+				defer wg.Done()
 
-			url := fmt.Sprintf("%s/update/", a.metricServerAddress)
+				ctx2, cancel2 := context.WithCancel(ctx)
+				defer cancel2()
 
-			status, err = sender.New().R().
-				SetURL(url).
-				SetTimeout(a.reqTimeout).
-				SetBody(m).
-				SetHeader("Content-Type", "text/plain").
-				Post(ctx2, cancel2)
+				url := fmt.Sprintf("%s/update/", a.metricServerAddress)
 
-			if err != nil {
-				log.Println(err)
-			}
+				status, err = sender.New().R().
+					SetURL(url).
+					SetTimeout(a.reqTimeout).
+					SetBody(m).
+					SetHeader("Content-Type", "application/json").
+					Post(ctx2, cancel2)
 
-			if status != http.StatusOK {
-				log.Println("request response status: ", status)
-			}
+				if err != nil {
+					log.Println(err)
+				}
+
+				if status != http.StatusOK {
+					log.Println("request response status: ", status)
+				}
+			}(m)
 		}
+
+		wg.Wait()
 	}
 }

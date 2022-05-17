@@ -1,6 +1,8 @@
 package application
 
 import (
+	"log"
+
 	"github.com/achrt/metrics-collector/internal/domain/repositories"
 	"github.com/achrt/metrics-collector/internal/storage"
 	"github.com/gin-gonic/gin"
@@ -19,17 +21,22 @@ func New() (*App, error) {
 		return nil, err
 	}
 
+	s, err := storage.New(cfg.StoreFile, cfg.StoreInterval)
+	if err != nil {
+		return nil, err
+	}
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
-	a :=  &App{
-		Store:   storage.New(),
+	a := &App{
+		Store:   s,
 		Router:  router,
 		address: cfg.Address,
 	}
-	a.Store.Init()
 	return a, nil
 }
 
 func (a *App) Run() error {
+	log.Println("server is up and running in address: ", a.address)
 	return a.Router.Run(a.address)
 }
