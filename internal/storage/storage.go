@@ -3,6 +3,7 @@ package storage
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -148,6 +149,8 @@ func (s *Storage) cast() error {
 func (s *Storage) writer() {
 	for {
 		<-time.After(s.castTicker)
-		s.Cast()
+		if err := s.Cast(); err != nil {
+			log.Fatal(err)
+		}
 	}
 }

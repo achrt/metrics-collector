@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/json"
+	"log"
 	"os"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
@@ -13,7 +14,7 @@ type producer struct {
 }
 
 func newProducer(filename string) (*producer, error) {
-	file, err := os.Create(filename)
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		return nil, err
 	}
@@ -40,9 +41,14 @@ type consumer struct {
 }
 
 func newConsumer(filename string) (*consumer, error) {
-	file, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0777)
+	var file *os.File
+	var err error
+	file, err = os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0777)
 	if err != nil {
-		return nil, err
+		log.Println(err)
+		if file, err = os.Create(filename); err != nil {
+			return nil, err
+		}
 	}
 
 	return &consumer{
