@@ -11,14 +11,14 @@ import (
 const (
 	dAddress       = "127.0.0.1:8080"
 	dRestore       = true
-	dStoreInterval = 10 * time.Second
+	dStoreInterval = 300 * time.Second
 	dStFile        = "/tmp/devops-metrics-db.json"
 )
 
 type Config struct {
 	Address       string        `env:"ADDRESS" envDefault:"127.0.0.1:8080"`
-	StoreFile     string        `env:"STORE_FILE" envDefault:"/tmp/devops-metrics-db-ee.json"`
-	StoreInterval time.Duration `env:"STORE_INTERVAL" envDefault:"10s"`
+	StoreFile     string        `env:"STORE_FILE" envDefault:"/tmp/devops-metrics-db.json"`
+	StoreInterval time.Duration `env:"STORE_INTERVAL" envDefault:"300s"`
 	Restore       bool          `env:"RESTORE" envDefault:"true"`
 }
 
@@ -32,12 +32,10 @@ func (c *Config) loadConfiguration() error {
 	if err := env.Parse(c); err != nil {
 		return err
 	}
-
-	log.Println(c)
-
 	if c.Address == dAddress && fAdd != nil && *fAdd != dAddress {
 		c.Address = *fAdd
 	}
+
 	if c.StoreFile == dStFile && fStFile != nil && *fStFile != dStFile {
 		c.StoreFile = *fStFile
 	}
