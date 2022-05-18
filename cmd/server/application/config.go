@@ -3,6 +3,7 @@ package application
 import (
 	"flag"
 	"log"
+	"time"
 
 	"github.com/caarlos0/env/v6"
 )
@@ -10,21 +11,21 @@ import (
 const (
 	dAddress       = "127.0.0.1:8080"
 	dRestore       = true
-	dStoreInterval = 10
+	dStoreInterval = 10 * time.Second
 	dStFile        = "/tmp/devops-metrics-db.json"
 )
 
 type Config struct {
-	Address       string `env:"ADDRESS" envDefault:"127.0.0.1:8080"`
-	StoreFile     string `env:"STORE_FILE" envDefault:"/tmp/devops-metrics-db-ee.json"`
-	StoreInterval uint32 `env:"STORE_INTERVAL" envDefault:"10"`
-	Restore       bool   `env:"RESTORE" envDefault:"true"`
+	Address       string        `env:"ADDRESS" envDefault:"127.0.0.1:8080"`
+	StoreFile     string        `env:"STORE_FILE" envDefault:"/tmp/devops-metrics-db-ee.json"`
+	StoreInterval time.Duration `env:"STORE_INTERVAL" envDefault:"10s"`
+	Restore       bool          `env:"RESTORE" envDefault:"true"`
 }
 
 func (c *Config) loadConfiguration() error {
 	fAdd := flag.String("a", dAddress, "host:port")
 	fRestore := flag.Bool("r", dRestore, "restore previous metrics")
-	fStInetrval := flag.Int("i", dStoreInterval, "an interval between metrics storing")
+	fStInetrval := flag.Duration("i", dStoreInterval, "an interval between metrics storing")
 	fStFile := flag.String("f", dStFile, "storage file address")
 	flag.Parse()
 
@@ -41,7 +42,7 @@ func (c *Config) loadConfiguration() error {
 		c.StoreFile = *fStFile
 	}
 	if c.StoreInterval == dStoreInterval && fStInetrval != nil && *fStInetrval != dStoreInterval {
-		c.StoreInterval = uint32(*fStInetrval)
+		c.StoreInterval = *fStInetrval
 	}
 	if c.Restore && fRestore != nil && !*fRestore {
 		c.Restore = *fRestore

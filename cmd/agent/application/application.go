@@ -15,8 +15,8 @@ import (
 )
 
 type App struct {
-	reportInterval      int64
-	reportTimerDuration int64
+	reportInterval      time.Duration
+	reportTimerDuration time.Duration
 	metricServerAddress string
 	reqTimeout          int
 
@@ -32,8 +32,8 @@ func New() (*App, error) {
 	}
 	
 	return &App{
-		reportInterval:      int64(cfg.ReportInterval),
-		reportTimerDuration: int64(cfg.ReportInterval),
+		reportInterval:      cfg.ReportInterval,
+		reportTimerDuration: cfg.ReportInterval,
 		sender:              sender.New(),
 		metricServerAddress: "http://" + cfg.Address,
 		reqTimeout:          reqTimeout,

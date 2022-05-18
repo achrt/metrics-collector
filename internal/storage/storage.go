@@ -14,13 +14,13 @@ type Storage struct {
 	sync.RWMutex
 	m map[string]models.Metrics
 
-	castTicker   uint32 // кол-во секунд между вызовом Cast(); если 0, то сохранение при каждом обновлении
+	castTicker   time.Duration // кол-во секунд между вызовом Cast(); если 0, то сохранение при каждом обновлении
 	saveToDisk   bool
 	saveOnUpdate bool
 	logFile      string
 }
 
-func New(filePath string, castTicker uint32) (s *Storage, err error) {
+func New(filePath string, castTicker time.Duration) (s *Storage, err error) {
 	s = &Storage{
 		m:            map[string]models.Metrics{},
 		castTicker:   castTicker,
@@ -28,11 +28,8 @@ func New(filePath string, castTicker uint32) (s *Storage, err error) {
 		saveToDisk:   filePath != "",
 		logFile:      filePath,
 	}
-	if s.saveToDisk {
-
-		if !s.saveOnUpdate {
-			go s.writer()
-		}
+	if s.saveToDisk && !s.saveOnUpdate {
+		go s.writer()
 	}
 
 	return
@@ -86,7 +83,7 @@ func (s *Storage) set(code string, val models.Metrics) error {
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
@@ -150,7 +147,7 @@ func (s *Storage) cast() error {
 
 func (s *Storage) writer() {
 	for {
-		<-time.After(time.Duration(s.castTicker) * time.Second)
+		<-time.After(s.castTicker)
 		s.Cast()
 	}
 }
