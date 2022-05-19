@@ -8,8 +8,7 @@ import (
 	"time"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
-
-	log "github.com/sirupsen/logrus"
+	"github.com/labstack/gommon/log"
 )
 
 type Storage struct {
@@ -122,7 +121,12 @@ func (s *Storage) Load() error {
 		if err = s.set(mt.ID, *mt); err != nil {
 			log.Error(err)
 		} else {
-			log.Infof("loaded %v", *mt)
+			if mt.Delta != nil {
+				log.Infof("[loaded] %s, %s, %d", mt.ID, mt.MType, *mt.Delta)
+			}
+			if mt.Value != nil {
+				log.Infof("[loaded] %s, %s, %v", mt.ID, mt.MType, *mt.Value)
+			}
 		}
 	}
 	return nil
