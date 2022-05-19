@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"log"
 	"testing"
 
@@ -18,12 +19,15 @@ var (
 const filePath = "./metrics.json"
 
 func TestMain(m *testing.M) {
-	store, err = New(filePath, 0)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store, err = New(filePath, 0, cancel)
 	if err != nil {
 		log.Fatal(err)
 	}
 	store.Load()
 	m.Run()
+	<-ctx.Done()
 }
 
 func TestSetGet(t *testing.T) {
