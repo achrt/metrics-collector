@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -8,19 +9,20 @@ import (
 	"time"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
+	"github.com/labstack/gommon/log"
 )
 
 type Storage struct {
 	sync.RWMutex
 	m map[string]models.Metrics
 
-	castTicker   uint32 // кол-во секунд между вызовом Cast(); если 0, то сохранение при каждом обновлении
+	castTicker   time.Duration // кол-во секунд между вызовом Cast(); если 0, то сохранение при каждом обновлении
 	saveToDisk   bool
 	saveOnUpdate bool
 	logFile      string
 }
 
-func New(filePath string, castTicker uint32) (s *Storage, err error) {
+func New(filePath string, castTicker time.Duration, cancel context.CancelFunc) (s *Storage, err error) {
 	s = &Storage{
 		m:            map[string]models.Metrics{},
 		castTicker:   castTicker,
@@ -28,11 +30,8 @@ func New(filePath string, castTicker uint32) (s *Storage, err error) {
 		saveToDisk:   filePath != "",
 		logFile:      filePath,
 	}
-	if s.saveToDisk {
-
-		if !s.saveOnUpdate {
-			go s.writer()
-		}
+	if s.saveToDisk && !s.saveOnUpdate {
+		go s.writer(cancel)
 	}
 
 	return
@@ -86,7 +85,7 @@ func (s *Storage) set(code string, val models.Metrics) error {
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
@@ -120,7 +119,16 @@ func (s *Storage) Load() error {
 		return err
 	}
 	for _, mt := range m {
-		s.set(mt.ID, *mt)
+		if err = s.set(mt.ID, *mt); err != nil {
+			log.Error(err)
+		} else {
+			if mt.Delta != nil {
+				log.Infof("[loaded] %s, %s, %d", mt.ID, mt.MType, *mt.Delta)
+			}
+			if mt.Value != nil {
+				log.Infof("[loaded] %s, %s, %v", mt.ID, mt.MType, *mt.Value)
+			}
+		}
 	}
 	return nil
 }
@@ -137,6 +145,12 @@ func (s *Storage) cast() error {
 	mtr := []models.Metrics{}
 	for _, m := range s.m {
 		mtr = append(mtr, m)
+		if m.Delta != nil {
+			log.Infof("[to store] %s, %s, %d", m.ID, m.MType, *m.Delta)
+		}
+		if m.Value != nil {
+			log.Infof("[to store] %s, %s, %v", m.ID, m.MType, *m.Value)
+		}
 	}
 
 	producer, err := newProducer(s.logFile)
@@ -148,9 +162,13 @@ func (s *Storage) cast() error {
 	return producer.write(mtr)
 }
 
-func (s *Storage) writer() {
+func (s *Storage) writer(cancel context.CancelFunc) {
+	defer cancel()
 	for {
-		<-time.After(time.Duration(s.castTicker) * time.Second)
-		s.Cast()
+		<-time.After(s.castTicker)
+		if err := s.Cast(); err != nil {
+			log.Fatal(err)
+			break
+		}
 	}
 }
