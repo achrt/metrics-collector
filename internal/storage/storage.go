@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -21,7 +22,7 @@ type Storage struct {
 	logFile      string
 }
 
-func New(filePath string, castTicker time.Duration) (s *Storage, err error) {
+func New(filePath string, castTicker time.Duration, cancel context.CancelFunc) (s *Storage, err error) {
 	s = &Storage{
 		m:            map[string]models.Metrics{},
 		castTicker:   castTicker,
@@ -30,7 +31,7 @@ func New(filePath string, castTicker time.Duration) (s *Storage, err error) {
 		logFile:      filePath,
 	}
 	if s.saveToDisk && !s.saveOnUpdate {
-		go s.writer()
+		go s.writer(cancel)
 	}
 
 	return
@@ -144,6 +145,12 @@ func (s *Storage) cast() error {
 	mtr := []models.Metrics{}
 	for _, m := range s.m {
 		mtr = append(mtr, m)
+		if m.Delta != nil {
+			log.Infof("[to store] %s, %s, %d", m.ID, m.MType, *m.Delta)
+		}
+		if m.Value != nil {
+			log.Infof("[to store] %s, %s, %v", m.ID, m.MType, *m.Value)
+		}
 	}
 
 	producer, err := newProducer(s.logFile)
@@ -155,11 +162,13 @@ func (s *Storage) cast() error {
 	return producer.write(mtr)
 }
 
-func (s *Storage) writer() {
+func (s *Storage) writer(cancel context.CancelFunc) {
+	defer cancel()
 	for {
 		<-time.After(s.castTicker)
 		if err := s.Cast(); err != nil {
 			log.Fatal(err)
+			break
 		}
 	}
 }

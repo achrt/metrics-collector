@@ -1,6 +1,7 @@
 package application
 
 import (
+	"context"
 	"log"
 
 	"github.com/achrt/metrics-collector/internal/domain/repositories"
@@ -15,13 +16,13 @@ type App struct {
 	address string
 }
 
-func New() (*App, error) {
+func New(cancel context.CancelFunc) (*App, error) {
 	cfg := Config{}
 	if err := cfg.loadConfiguration(); err != nil {
 		return nil, err
 	}
 
-	s, err := storage.New(cfg.StoreFile, cfg.StoreInterval)
+	s, err := storage.New(cfg.StoreFile, cfg.StoreInterval, cancel)
 	if err != nil {
 		return nil, err
 	}

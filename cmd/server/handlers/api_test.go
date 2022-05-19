@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"log"
 	"testing"
 
@@ -12,7 +13,9 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	app, err := application.New()
+	_, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	app, err := application.New(cancel)
 	if err != nil {
 		log.Fatal(err)
 	}

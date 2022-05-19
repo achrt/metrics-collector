@@ -15,7 +15,7 @@ func main() {
 	defer cancel()
 	go sc.Run(ctx, cancel)
 
-	app, err := application.New()
+	app, err := application.New(cancel)
 	if err != nil {
 		log.Fatal(err)
 	}
