@@ -3,12 +3,13 @@ package storage
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Storage struct {
@@ -118,7 +119,11 @@ func (s *Storage) Load() error {
 		return err
 	}
 	for _, mt := range m {
-		s.set(mt.ID, *mt)
+		if err = s.set(mt.ID, *mt); err != nil {
+			log.Error(err)
+		} else {
+			log.Infof("loaded %v", *mt)
+		}
 	}
 	return nil
 }

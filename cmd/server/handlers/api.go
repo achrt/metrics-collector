@@ -3,7 +3,7 @@ package handlers
 import (
 	"github.com/achrt/metrics-collector/cmd/server/application"
 	"github.com/achrt/metrics-collector/internal/domain/repositories"
-	"github.com/achrt/metrics-collector/internal/middlewares"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,7 +28,8 @@ func (h *Handler) Router() {
 
 	h.router.Use(gin.Logger())
 	h.router.Use(gin.Recovery())
-	h.router.Use(middlewares.GzipDecompress(), middlewares.GzipCompress())
+	// h.router.Use(middlewares.GzipDecompress(), middlewares.GzipCompress())
+	h.router.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	h.router.GET("/", h.List)
 	h.router.GET("/health", h.Health)
