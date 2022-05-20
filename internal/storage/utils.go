@@ -43,7 +43,7 @@ type consumer struct {
 func newConsumer(filename string) (*consumer, error) {
 	var file *os.File
 	var err error
-	file, err = os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0777)
+	file, err = os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
 		log.Println(err)
 		if file, err = os.Create(filename); err != nil {
