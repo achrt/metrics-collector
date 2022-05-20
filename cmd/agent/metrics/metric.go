@@ -11,17 +11,17 @@ import (
 type Monitor struct {
 	health.HealthStat
 
-	duration int64
+	duration time.Duration
 }
 
-func New(duration int64) *Monitor {
+func New(duration time.Duration) *Monitor {
 	return &Monitor{duration: duration}
 }
 
 func (m *Monitor) Run(ctx context.Context, cancel context.CancelFunc) {
 	defer cancel()
 
-	interval := time.Duration(m.duration) * time.Second
+	interval := m.duration
 	for {
 		<-time.After(interval)
 		m.updateMetrics()

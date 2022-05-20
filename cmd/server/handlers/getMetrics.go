@@ -2,18 +2,18 @@ package handlers
 
 import (
 	"errors"
-	"log"
 	"net/http"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
 	"github.com/gin-gonic/gin"
+	"github.com/labstack/gommon/log"
 )
 
 func (h *Handler) GetMetrics(c *gin.Context) {
 
 	metric, status, err := h.getMetrics(c)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		c.String(status, "err")
 		return
 	}
@@ -23,20 +23,25 @@ func (h *Handler) GetMetrics(c *gin.Context) {
 func (h *Handler) getMetrics(c *gin.Context) (m *models.Metrics, status int, err error) {
 	status = http.StatusOK
 
+	log.Info(h.store.PrintMetrics())
+
 	if err = c.ShouldBindJSON(&m); err != nil {
 		status = http.StatusBadRequest
+		log.Error(err)
 		return
 	}
 
 	if m.ID == "" || m.MType == "" {
 		status = http.StatusNotFound
 		err = errors.New("m.ID | m.MType is an empty string")
+		log.Error(err)
 		return
 	}
 
 	m, err = h.store.Get(m.ID)
 	if err != nil {
 		status = http.StatusNotFound
+		log.Error(err)
 	}
 	return
 }

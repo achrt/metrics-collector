@@ -1,7 +1,8 @@
 package application
 
 import (
-	"log"
+	"context"
+	"github.com/labstack/gommon/log"
 
 	"github.com/achrt/metrics-collector/internal/domain/repositories"
 	"github.com/achrt/metrics-collector/internal/storage"
@@ -15,15 +16,21 @@ type App struct {
 	address string
 }
 
-func New() (*App, error) {
-	cfg, err := loadConfiguration()
+func New(cancel context.CancelFunc) (*App, error) {
+	cfg := Config{}
+	if err := cfg.loadConfiguration(); err != nil {
+		return nil, err
+	}
+
+	s, err := storage.New(cfg.StoreFile, cfg.StoreInterval, cancel)
 	if err != nil {
 		return nil, err
 	}
 
-	s, err := storage.New(cfg.StoreFile, cfg.StoreInterval)
-	if err != nil {
-		return nil, err
+	if cfg.Restore {
+		if err = s.Load(); err != nil {
+			return nil, err
+		}
 	}
 
 	gin.SetMode(gin.ReleaseMode)
@@ -37,6 +44,6 @@ func New() (*App, error) {
 }
 
 func (a *App) Run() error {
-	log.Println("server is up and running in address: ", a.address)
+	log.Info("server is up and running in address: ", a.address)
 	return a.Router.Run(a.address)
 }
