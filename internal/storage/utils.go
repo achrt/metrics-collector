@@ -2,10 +2,10 @@ package storage
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
+	"github.com/labstack/gommon/log"
 )
 
 type producer struct {
@@ -16,6 +16,7 @@ type producer struct {
 func newProducer(filename string) (*producer, error) {
 	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
 	return &producer{
@@ -26,6 +27,9 @@ func newProducer(filename string) (*producer, error) {
 
 func (p *producer) write(m []models.Metrics) error {
 	err := p.encoder.Encode(m)
+	if err != nil {
+		log.Error(err)
+	}
 	return err
 }
 
@@ -45,8 +49,9 @@ func newConsumer(filename string) (*consumer, error) {
 	var err error
 	file, err = os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0600)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 		if file, err = os.Create(filename); err != nil {
+			log.Error(err)
 			return nil, err
 		}
 	}
@@ -59,7 +64,9 @@ func newConsumer(filename string) (*consumer, error) {
 
 func (c *consumer) read() ([]*models.Metrics, error) {
 	m := []*models.Metrics{}
-	c.decoder.Decode(&m)
+	if err := c.decoder.Decode(&m); err != nil {
+		log.Error(err)
+	}
 	return m, nil
 }
 

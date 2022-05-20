@@ -22,6 +22,7 @@ func (h *Handler) updateMetrics(c *gin.Context) (status int, err error) {
 	var m models.Metrics
 	if err = c.ShouldBindJSON(&m); err != nil {
 		status = http.StatusBadRequest
+		log.Error(err)
 		return
 	}
 
