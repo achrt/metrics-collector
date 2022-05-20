@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"log"
 	"testing"
 
@@ -18,7 +19,9 @@ var (
 const filePath = "./metrics.json"
 
 func TestMain(m *testing.M) {
-	store, err = New(filePath, 0)
+	_, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	store, err = New(filePath, 0, cancel)
 	if err != nil {
 		log.Fatal(err)
 	}

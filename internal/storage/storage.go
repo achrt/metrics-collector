@@ -1,14 +1,15 @@
 package storage
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/achrt/metrics-collector/internal/domain/models"
+	"github.com/labstack/gommon/log"
 )
 
 type Storage struct {
@@ -21,7 +22,7 @@ type Storage struct {
 	logFile      string
 }
 
-func New(filePath string, castTicker time.Duration) (s *Storage, err error) {
+func New(filePath string, castTicker time.Duration, cancel context.CancelFunc) (s *Storage, err error) {
 	s = &Storage{
 		m:            map[string]models.Metrics{},
 		castTicker:   castTicker,
@@ -30,7 +31,7 @@ func New(filePath string, castTicker time.Duration) (s *Storage, err error) {
 		logFile:      filePath,
 	}
 	if s.saveToDisk && !s.saveOnUpdate {
-		go s.writer()
+		go s.writer(cancel)
 	}
 
 	return
@@ -118,7 +119,16 @@ func (s *Storage) Load() error {
 		return err
 	}
 	for _, mt := range m {
-		s.set(mt.ID, *mt)
+		if err = s.set(mt.ID, *mt); err != nil {
+			log.Error(err)
+		} else {
+			if mt.Delta != nil {
+				log.Infof("[loaded] %s, %s, %d", mt.ID, mt.MType, *mt.Delta)
+			}
+			if mt.Value != nil {
+				log.Infof("[loaded] %s, %s, %v", mt.ID, mt.MType, *mt.Value)
+			}
+		}
 	}
 	return nil
 }
@@ -135,6 +145,12 @@ func (s *Storage) cast() error {
 	mtr := []models.Metrics{}
 	for _, m := range s.m {
 		mtr = append(mtr, m)
+		if m.Delta != nil {
+			log.Infof("[to store] %s, %s, %d", m.ID, m.MType, *m.Delta)
+		}
+		if m.Value != nil {
+			log.Infof("[to store] %s, %s, %v", m.ID, m.MType, *m.Value)
+		}
 	}
 
 	producer, err := newProducer(s.logFile)
@@ -146,11 +162,13 @@ func (s *Storage) cast() error {
 	return producer.write(mtr)
 }
 
-func (s *Storage) writer() {
+func (s *Storage) writer(cancel context.CancelFunc) {
+	defer cancel()
 	for {
 		<-time.After(s.castTicker)
 		if err := s.Cast(); err != nil {
 			log.Fatal(err)
+			break
 		}
 	}
 }
