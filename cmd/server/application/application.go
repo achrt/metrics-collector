@@ -2,7 +2,7 @@ package application
 
 import (
 	"context"
-	"log"
+	"github.com/labstack/gommon/log"
 
 	"github.com/achrt/metrics-collector/internal/domain/repositories"
 	"github.com/achrt/metrics-collector/internal/storage"
@@ -44,6 +44,6 @@ func New(cancel context.CancelFunc) (*App, error) {
 }
 
 func (a *App) Run() error {
-	log.Println("server is up and running in address: ", a.address)
+	log.Info("server is up and running in address: ", a.address)
 	return a.Router.Run(a.address)
 }

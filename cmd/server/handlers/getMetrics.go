@@ -23,6 +23,8 @@ func (h *Handler) GetMetrics(c *gin.Context) {
 func (h *Handler) getMetrics(c *gin.Context) (m *models.Metrics, status int, err error) {
 	status = http.StatusOK
 
+	log.Info(h.store.PrintMetrics())
+
 	if err = c.ShouldBindJSON(&m); err != nil {
 		status = http.StatusBadRequest
 		log.Error(err)

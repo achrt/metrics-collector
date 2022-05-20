@@ -50,6 +50,8 @@ func (h *Handler) update(c *gin.Context) (status int, err error) {
 		if err = h.store.Set(code, m); err != nil {
 			status = http.StatusInternalServerError
 			log.Error(err)
+		} else {
+			log.Infof("[updated] %s, %s, %d", m.ID, m.MType, *m.Delta)
 		}
 		return
 	}
@@ -71,6 +73,8 @@ func (h *Handler) update(c *gin.Context) (status int, err error) {
 	if err = h.store.Set(code, m); err != nil {
 		status = http.StatusInternalServerError
 		log.Error(err)
+	} else {
+		log.Infof("[updated] %s, %s, %d", m.ID, m.MType, *m.Value)
 	}
 	return
 }

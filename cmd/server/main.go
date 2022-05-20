@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"github.com/labstack/gommon/log"
 
 	"github.com/achrt/metrics-collector/cmd/server/application"
 	"github.com/achrt/metrics-collector/cmd/server/handlers"

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/labstack/gommon/log"
+
 	"github.com/achrt/metrics-collector/internal/domain/models"
 	"github.com/gin-gonic/gin"
 )
@@ -25,15 +27,19 @@ func (h *Handler) get(c *gin.Context) (value string, status int, err error) {
 
 	status = http.StatusOK
 
+	log.Info(h.store.PrintMetrics())
+
 	if mType != models.TypeCounter && mType != models.TypeGauge {
 		status = http.StatusNotFound
 		err = errors.New(http.StatusText(status))
+		log.Error(err)
 		return
 	}
 
 	m, err := h.store.Get(code)
 	if err != nil {
 		status = http.StatusNotFound
+		log.Error(err)
 		return
 	}
 
